@@ -1,27 +1,15 @@
 import streamlit as st
 import pandas as pd
-import requests
 import re
 import unicodedata
 import Levenshtein
 
-# URL to the raw Excel file in GitHub
-FILE_URL = "https://github.com/mythicsociety/KannadaTools/raw/e340450d36da9ee9357323be9947bb2c579236ca/mythic_society%20(1).xlsx"
+# Define the URL to your Excel file hosted on GitHub (raw format)
+FILE_URL = "https://github.com/saatvikpaul19/myt/raw/0aed2a4cdd23a0028264c8984359c85879131e77/mythic_society%20(1).xlsx"
 
-# Custom exceptions
-class EmptyInputError(Exception):
-    pass
+# Load the data from the Excel file
+df = pd.read_excel(FILE_URL)
 
-class InvalidInputError(Exception):
-    pass
-
-# Load the data from the GitHub URL
-@st.cache_data
-def load_data_from_github(file_url):
-    response = requests.get(file_url)
-    with open("temp_data.xlsx", "wb") as temp_file:
-        temp_file.write(response.content)
-    return pd.read_excel("temp_data.xlsx", engine='openpyxl')
 
 # Function to split Kannada text into tokens
 def split_kannada_text(text):
@@ -106,11 +94,7 @@ def split_kannada_text_diff(text):
     return tokens
 
 def count_words(text):
-    if not text.strip():
-        raise EmptyInputError("The input text is empty.")
     text = clean_text(text)
-    if not text:
-        raise InvalidInputError("The input text does not contain valid Kannada characters after cleaning.")
     words = re.split(r'(\s+|\|)', text)
     tokens = []
     for word in words:
@@ -170,11 +154,7 @@ def process_text(text):
     return line_word_counts, total_words, len(lines)
 
 # Create the miss_read_dict from the DataFrame
-df = load_data_from_github(FILE_URL)
 miss_read_dict = create_miss_read_dict(df)
-
-# Streamlit UI
-# ... (rest of your Streamlit UI code remains the same)
 
 # Streamlit UI
 st.title("Compare Kannada Sentences, Count Aksharas and Predict Potential Misread Aksharas")
@@ -201,10 +181,6 @@ if st.button("Process Text"):
             st.write("---")
         st.write(f"Total number of aksharas: {total_words}")
         st.write(f"Total number of sentences: {num_lines}")
-    except EmptyInputError as e:
-        st.error(f"Error: {e}")
-    except InvalidInputError as e:
-        st.error(f"Error: {e}")
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
 
@@ -221,5 +197,3 @@ if st.button("Compare Sentences"):
         for diff in differences:
             st.write(f"({''.join(diff[0])}, {''.join(diff[1])})")
         st.write("---")
-
-

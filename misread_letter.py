@@ -8,16 +8,20 @@ import Levenshtein
 # URL to the raw Excel file in GitHub
 FILE_URL = "https://github.com/mythicsociety/KannadaTools/raw/e340450d36da9ee9357323be9947bb2c579236ca/mythic_society%20(1).xlsx"
 
+# Custom exceptions
+class EmptyInputError(Exception):
+    pass
+
+class InvalidInputError(Exception):
+    pass
+
 # Load the data from the GitHub URL
 @st.cache_data
 def load_data_from_github(file_url):
     response = requests.get(file_url)
     with open("temp_data.xlsx", "wb") as temp_file:
         temp_file.write(response.content)
-    return pd.read_excel("temp_data.xlsx")
-
-# Call the function to load the Excel data
-df = load_data_from_github(FILE_URL)
+    return pd.read_excel("temp_data.xlsx", engine='openpyxl')
 
 # Function to split Kannada text into tokens
 def split_kannada_text(text):
@@ -166,7 +170,11 @@ def process_text(text):
     return line_word_counts, total_words, len(lines)
 
 # Create the miss_read_dict from the DataFrame
+df = load_data_from_github(FILE_URL)
 miss_read_dict = create_miss_read_dict(df)
+
+# Streamlit UI
+# ... (rest of your Streamlit UI code remains the same)
 
 # Streamlit UI
 st.title("Compare Kannada Sentences, Count Aksharas and Predict Potential Misread Aksharas")

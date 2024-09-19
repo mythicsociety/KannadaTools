@@ -1,13 +1,23 @@
 import streamlit as st
 import pandas as pd
+import requests
 import re
 import unicodedata
 import Levenshtein
 
-# Define the path to your Excel file
-FILE_PATH = "C:\\WorkingFiles\\NMKRVCharAnalysis\\30aug24\\mythic_society (1).xlsx"  
-# Load the data from the Excel file
-df = pd.read_excel(FILE_PATH)
+# URL to the raw Excel file in GitHub
+FILE_URL = "https://github.com/mythicsociety/KannadaTools/raw/e340450d36da9ee9357323be9947bb2c579236ca/mythic_society%20(1).xlsx"
+
+# Load the data from the GitHub URL
+@st.cache_data
+def load_data_from_github(file_url):
+    response = requests.get(file_url)
+    with open("temp_data.xlsx", "wb") as temp_file:
+        temp_file.write(response.content)
+    return pd.read_excel("temp_data.xlsx")
+
+# Call the function to load the Excel data
+df = load_data_from_github(FILE_URL)
 
 # Function to split Kannada text into tokens
 def split_kannada_text(text):

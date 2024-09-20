@@ -202,7 +202,7 @@ sentence = st.text_input("Enter Kannada sentences from an inscription to predict
 if sentence:
     result = predict_miss_read(sentence, miss_read_dict)
     if result:
-        st.write("Possible misreads and corrections:")
+        st.write("Based on observations of over 200 inscriptions, the following aksharas in that inscription may have been misread.")
         for miss_read, corrections in result.items():
             st.write(f"'{miss_read}' could be misread as {', '.join(corrections)}")
     else:
@@ -221,7 +221,7 @@ if st.button("Process Text"):
 
         # Then print line-by-line counts
         for i, word_count in enumerate(line_word_counts):
-            st.write(f"Number of Aksharas in Sentence {i+1} is {word_count}") 
+            st.write(f"Number of aksharas in sentence {i+1} is {word_count}") 
     
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")

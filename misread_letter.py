@@ -166,7 +166,7 @@ def process_text(text):
 miss_read_dict = create_miss_read_dict(df)
 
 # Streamlit UI
-# st.title("Compare Kannada Sentences, Count Aksharas and Predict Potential Misread Aksharas")
+
 st.markdown("""
 <style>
 .title-container {
@@ -213,16 +213,18 @@ text = st.text_area("Enter the Kannada inscription text to count the number of a
 if st.button("Process Text"):
     try:
         line_word_counts, total_words, num_lines = process_text(text)
+
+        # Print total counts first with color styling
+        st.markdown(f"<span style='color:red'>Total number of aksharas in the inscription: {total_words}</span>", unsafe_allow_html=True)
+        st.markdown(f"<span style='color:blue'>Total number of sentences in the inscription: {num_lines}</span>", unsafe_allow_html=True)
+        st.write("---") 
+
+        # Then print line-by-line counts
         for i, word_count in enumerate(line_word_counts):
-            st.write(f"Sentence {i+1}:")
-            st.write(f"Akshara count: {word_count}")
-            st.write("---")
-        st.write(f"Total number of aksharas: {total_words}")
-        st.write(f"Total number of sentences: {num_lines}")
+            st.write(f"Number of Aksharas in Sentence {i+1} is {word_count}") 
+    
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
-
-# ... (your existing code) ...
 
 st.header("Compare The Text of Two Kannada Inscriptions")
 
@@ -240,11 +242,11 @@ if st.button("Compare Inscriptions"):
     comparison_results = compare_lines(seq1, seq2)
     for i, (line1, line2, differences) in enumerate(comparison_results):
         st.write(f"Line {i+1}:")
-        st.write(f"Sentence in Inscription 1: {line1}")
-        st.write(f"Sentence in Inscription 2: {line2}")
+        st.markdown(f"Sentence in Inscription 1: <span style='color:red'>{line1}</span>", unsafe_allow_html=True)
+        # Apply color styling only to the output of the second sentence
+        st.markdown(f"Sentence in Inscription 2: <span style='color:blue'>{line2}</span>", unsafe_allow_html=True) 
         if differences:
             st.write("Differences in Sentences")
-            # Use st.markdown to render the formatted differences
             st.markdown(differences, unsafe_allow_html=True) 
         st.write("---")
 

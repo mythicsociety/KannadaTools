@@ -215,7 +215,7 @@ st.markdown("""
 <div class="title-container">
 <span class="title-line1">Utilities for Working With Kannada Inscriptions</span>
 <br>
-<span class="title-line2">These utilities are used extensively by the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project Team</span>
+<span class="title-line2">These utilities are used extensively by the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project Team. They were developed because off-the-shelf software is unable to perform these tasks correctly</span>
 </div>
 """, unsafe_allow_html=True)
 

@@ -167,6 +167,24 @@ miss_read_dict = create_miss_read_dict(df)
 
 # Streamlit UI
 
+import streamlit as st
+import pandas as pd
+import re
+import unicodedata
+import Levenshtein
+
+# ... (your existing code for functions and data loading) ...
+
+# Streamlit UI
+import streamlit as st
+import pandas as pd
+import re
+import unicodedata
+import Levenshtein
+
+# ... (your existing code for functions and data loading) ...
+
+# Streamlit UI
 st.markdown("""
 <style>
 .title-container {
@@ -174,80 +192,87 @@ st.markdown("""
 }
 
 .title-line1 {
-    font-size: 38px !important; /* Adjust font size as needed */
+    font-size: 38px !important; 
     font-weight: bold;
 }
 
 .title-line2 {
-    font-size: 24px !important; /* Adjust font size as needed */
+    font-size: 24px !important; 
 }
 
 .note-line {
     text-align: center;
+}
+
+/* Style for custom section headers */
+.custom-header {
+    font-size: 24px !important; 
+    font-weight: bold;
+    margin-bottom: 10px; 
 }
 </style>
 
 <div class="title-container">
 <span class="title-line1">Utilities for Working With Kannada Inscriptions</span>
 <br>
-<span class="title-line2">Compare The Text of Kannada Inscriptions, Count the Number of Aksharas in An Inscription, Identify Potential Misread Aksharas in Inscription</span>
+<span class="title-line2">These utilities are used extensively by the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project Team</span>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("<span class='note-line' style='color:blue'>*Note: While this program has only been tested for Kannada, it may work for other Indic scripts as well*</span>", unsafe_allow_html=True)
 
+# Potential Misread Akshara Predictor section
+st.markdown("<div class='custom-header'>Potential Misread Akshara Predictor</div>", unsafe_allow_html=True) 
+with st.expander(""):
+    sentence = st.text_input("Enter Kannada sentences from an inscription to predict possible misreads")
+    if sentence:
+        result = predict_miss_read(sentence, miss_read_dict)
+        if result:
+            st.write("Based on observations of over 200 inscriptions, the following aksharas in that inscription may have been misread:")
+            for miss_read, corrections in result.items():
+                st.write(f"'{miss_read}' could be misread as {', '.join(corrections)}")
+        else:
+            st.write("No possible misreads found.")
 
-st.header("Potential Misread Akshara Predictor")
-sentence = st.text_input("Enter Kannada sentences from an inscription to predict possible misreads")
-if sentence:
-    result = predict_miss_read(sentence, miss_read_dict)
-    if result:
-        st.write("Based on observations of over 200 inscriptions, the following aksharas in that inscription may have been misread.")
-        for miss_read, corrections in result.items():
-            st.write(f"'{miss_read}' could be misread as {', '.join(corrections)}")
-    else:
-        st.write("No possible misreads found.")
+# Aksharas Counter section
+st.markdown("<div class='custom-header'>Aksharas Counter</div>", unsafe_allow_html=True)
+with st.expander(""):
+    text = st.text_area("Enter the Kannada inscription text to count the number of aksharas in:", "")
+    if st.button("Process Text"):
+        try:
+            line_word_counts, total_words, num_lines = process_text(text)
 
-st.header("Aksharas Counter")
-text = st.text_area("Enter the Kannada inscription text to count the number of aksharas in:", "")
-if st.button("Process Text"):
-    try:
-        line_word_counts, total_words, num_lines = process_text(text)
+            st.markdown(f"<span style='color:red'>Total number of aksharas: {total_words}</span>", unsafe_allow_html=True)
+            st.markdown(f"<span style='color:blue'>Total number of sentences: {num_lines}</span>", unsafe_allow_html=True)
+            st.write("---")
 
-        # Print total counts first with color styling
-        st.markdown(f"<span style='color:red'>Total number of aksharas in the inscription: {total_words}</span>", unsafe_allow_html=True)
-        st.markdown(f"<span style='color:blue'>Total number of sentences in the inscription: {num_lines}</span>", unsafe_allow_html=True)
-        st.write("---") 
+            for i, word_count in enumerate(line_word_counts):
+                st.write(f"Number of aksharas in sentence {i+1} is {word_count}")
 
-        # Then print line-by-line counts
-        for i, word_count in enumerate(line_word_counts):
-            st.write(f"Number of aksharas in sentence {i+1} is {word_count}") 
-    
-    except Exception as e:
-        st.error(f"An unexpected error occurred: {e}")
+        except Exception as e:
+            st.error(f"An unexpected error occurred: {e}")
 
-st.header("Compare The Text of Two Kannada Inscriptions")
+# Compare The Text of Two Kannada Inscriptions section
+st.markdown("<div class='custom-header'>Compare The Text of Two Kannada Inscriptions</div>", unsafe_allow_html=True)
+with st.expander(""):
+    col1, col2 = st.columns(2)
 
-# Create two columns
-col1, col2 = st.columns(2)
+    with col1:
+        seq1 = st.text_area("Enter text of inscription 1:", "")
 
-# Place the input boxes within the columns
-with col1:
-    seq1 = st.text_area("Enter text of inscription 1:", "")
+    with col2:
+        seq2 = st.text_area("Enter text of inscription 2:", "")
 
-with col2:
-    seq2 = st.text_area("Enter text of inscription 2:", "")
+    if st.button("Compare Inscriptions"):
+        comparison_results = compare_lines(seq1, seq2)
+        for i, (line1, line2, differences) in enumerate(comparison_results):
+            st.write(f"Line {i+1}:")
+            st.markdown(f"Sentence in Inscription 1: <span style='color:red'>{line1}</span>", unsafe_allow_html=True)
+            st.markdown(f"Sentence in Inscription 2: <span style='color:blue'>{line2}</span>", unsafe_allow_html=True)
+            if differences:
+                st.write("Differences in Sentences")
+                st.markdown(differences, unsafe_allow_html=True)
+            st.write("---")
 
-if st.button("Compare Inscriptions"):
-    comparison_results = compare_lines(seq1, seq2)
-    for i, (line1, line2, differences) in enumerate(comparison_results):
-        st.write(f"Line {i+1}:")
-        st.markdown(f"Sentence in Inscription 1: <span style='color:red'>{line1}</span>", unsafe_allow_html=True)
-        # Apply color styling only to the output of the second sentence
-        st.markdown(f"Sentence in Inscription 2: <span style='color:blue'>{line2}</span>", unsafe_allow_html=True) 
-        if differences:
-            st.write("Differences in Sentences")
-            st.markdown(differences, unsafe_allow_html=True) 
-        st.write("---")
-
+# Attribution at the bottom
 st.markdown("<div style='text-align: center;'>The first version of these utilities were developed by Ujwala Yadav and Deepti B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)

@@ -158,10 +158,39 @@ def process_text(text):
 miss_read_dict = create_miss_read_dict(df)
 
 # Streamlit UI
-st.title("Compare Kannada Sentences, Count Aksharas and Predict Potential Misread Aksharas")
+# st.title("Compare Kannada Sentences, Count Aksharas and Predict Potential Misread Aksharas")
+st.markdown("""
+<style>
+.title-container {
+    text-align: center; 
+}
+
+.title-line1 {
+    font-size: 34px !important; /* Adjust font size as needed */
+    font-weight: bold;
+}
+
+.title-line2 {
+    font-size: 24px !important; /* Adjust font size as needed */
+}
+
+.note-line {
+    text-align: center;
+}
+</style>
+
+<div class="title-container">
+<span class="title-line1">Utilities for Working With Kannada Inscriptions</span>
+<br>
+<span class="title-line2">Compare The Text of Kannada Inscriptions, Count the Number of Aksharas in An Inscription, Identify Potential Misread Aksharas in Inscription</span>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<span class='note-line' style='color:blue'>*Note: While this program has only been tested for Kannada, it may work for other Indic scripts as well*</span>", unsafe_allow_html=True)
+
 
 st.header("Potential Misread Akshara Predictor")
-sentence = st.text_input("Enter a Kannada sentence to check for possible misreads")
+sentence = st.text_input("Enter Kannada sentences from an inscription to predict possible misreads")
 if sentence:
     result = predict_miss_read(sentence, miss_read_dict)
     if result:
@@ -171,8 +200,8 @@ if sentence:
     else:
         st.write("No possible misreads found.")
 
-st.header("Akshara Counter")
-text = st.text_area("Enter the Kannada text:", "")
+st.header("Aksharas Counter")
+text = st.text_area("Enter the Kannada inscription text to count the number of aksharas in:", "")
 if st.button("Process Text"):
     try:
         line_word_counts, total_words, num_lines = process_text(text)
@@ -185,10 +214,10 @@ if st.button("Process Text"):
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
 
-st.header("Compare Two Kannada Sentences")
-seq1 = st.text_area("Enter sentence 1:", "")
-seq2 = st.text_area("Enter sentence 2:", "")
-if st.button("Compare Sentences"):
+st.header("Compare The Text of Two Kannada Inscriptions")
+seq1 = st.text_area("Enter text of inscription 1:", "")
+seq2 = st.text_area("Enter text of inscription 2:", "")
+if st.button("Compare Inscriptions"):
     comparison_results = compare_lines(seq1, seq2)
     for i, (line1, line2, differences) in enumerate(comparison_results):
         st.write(f"Line {i+1}:")

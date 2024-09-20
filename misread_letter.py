@@ -224,11 +224,11 @@ st.markdown("<span class='note-line' style='color:blue'>*Note: While this progra
 # Potential Misread Akshara Predictor section
 st.markdown("<div class='custom-header'>Potential Misread Akshara Predictor</div>", unsafe_allow_html=True) 
 with st.expander(""):
-    sentence = st.text_input("Enter Kannada sentences from an inscription to predict possible misreads")
+    sentence = st.text_input("Enter Kannada sentences from an inscription to predict potential misread aksharas and corrections")
     if sentence:
         result = predict_miss_read(sentence, miss_read_dict)
         if result:
-            st.write("Based on observations of over 200 inscriptions, the following aksharas in that inscription may have been misread:")
+            st.write("Observations made during the correction of over 200 inscriptions from the Bengaluru region suggest that the following aksharas in the provided inscription may have been misread:")
             for miss_read, corrections in result.items():
                 st.write(f"'{miss_read}' could be misread as {', '.join(corrections)}")
         else:
@@ -238,6 +238,7 @@ with st.expander(""):
 st.markdown("<div class='custom-header'>Aksharas Counter</div>", unsafe_allow_html=True)
 with st.expander(""):
     text = st.text_area("Enter the Kannada inscription text to count the number of aksharas in:", "")
+    st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be counted</span>", unsafe_allow_html=True)
     if st.button("Process Text"):
         try:
             line_word_counts, total_words, num_lines = process_text(text)

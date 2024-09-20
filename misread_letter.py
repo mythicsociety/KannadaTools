@@ -213,9 +213,9 @@ st.markdown("""
 </style>
 
 <div class="title-container">
-<span class="title-line1">Utilities for Working With Kannada Inscriptions</span>
+<span class="title-line1">Software Utilities for Working With Kannada Inscriptions</span>
 <br>
-<span class="title-line2">These utilities are used extensively by the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project Team. They were developed because off-the-shelf software is unable to perform these tasks correctly</span>
+<span class="title-line2">These software utilities are used extensively by the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project Team. They were developed because off-the-shelf software is unable to perform these tasks correctly</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -275,4 +275,4 @@ with st.expander(""):
             st.write("---")
 
 # Attribution at the bottom
-st.markdown("<div style='text-align: center;'>The first version of these utilities were developed by Ujwala Yadav and Deepti B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center;'>The first version of these software utilities were developed by Ujwala Yadav and Deepti B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)

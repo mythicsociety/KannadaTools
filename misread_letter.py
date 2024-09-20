@@ -131,8 +131,15 @@ def compare_lines(text1, text2):
         line2 = clean_text(line2)
         seq1_tokens = split_kannada_text_diff(line1)
         seq2_tokens = split_kannada_text_diff(line2)
+#       differences_seq = get_differences2(seq1_tokens, seq2_tokens)
+#       results.append((line1, line2, differences_seq))
+#   return results
         differences_seq = get_differences2(seq1_tokens, seq2_tokens)
-        results.append((line1, line2, differences_seq))
+
+        # This line is modified: Join the differences into a single line with ';' separator
+        formatted_differences = '; '.join([f"({''.join(diff[0])}, {''.join(diff[1])})" for diff in differences_seq])
+
+        results.append((line1, line2, formatted_differences))  # Store formatted_differences instead of differences_seq
     return results
 
 def process_text(text):
@@ -214,17 +221,29 @@ if st.button("Process Text"):
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
 
+# ... (your existing code) ...
+
 st.header("Compare The Text of Two Kannada Inscriptions")
-seq1 = st.text_area("Enter text of inscription 1:", "")
-seq2 = st.text_area("Enter text of inscription 2:", "")
+
+# Create two columns
+col1, col2 = st.columns(2)
+
+# Place the input boxes within the columns
+with col1:
+    seq1 = st.text_area("Enter text of inscription 1:", "")
+
+with col2:
+    seq2 = st.text_area("Enter text of inscription 2:", "")
+
 if st.button("Compare Inscriptions"):
     comparison_results = compare_lines(seq1, seq2)
-    for i, (line1, line2, differences) in enumerate(comparison_results):
+    for i, (line1, line2, differences) in enumerate(comparison_results):  # Use 'differences' here, not 'diff'
         st.write(f"Line {i+1}:")
-        st.write(f"Sentence 1: {line1}")
-        st.write(f"Sentence 2: {line2}")
-        st.write("Differences:")
-        for diff in differences:
-            st.write(f"({''.join(diff[0])}, {''.join(diff[1])})")
+        st.write(f"Sentence in Inscription 1: {line1}")
+        st.write(f"Sentence in Inscription 2: {line2}")
+        if differences:  # Print differences only if not empty
+            st.write("Differences in Sentences")
+            st.write(differences)  # Print the formatted differences directly
         st.write("---")
-st.markdown("<div style='text-align: center;'>These utilities were developed by Ujwala Yadav and Deepti B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)
+
+st.markdown("<div style='text-align: center;'>The first version of these utilities were developed by Ujwala Yadav and Deepti B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)

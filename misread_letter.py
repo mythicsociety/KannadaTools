@@ -166,7 +166,7 @@ st.markdown("""
 }
 
 .title-line1 {
-    font-size: 34px !important; /* Adjust font size as needed */
+    font-size: 38px !important; /* Adjust font size as needed */
     font-weight: bold;
 }
 
@@ -227,3 +227,4 @@ if st.button("Compare Inscriptions"):
         for diff in differences:
             st.write(f"({''.join(diff[0])}, {''.join(diff[1])})")
         st.write("---")
+st.markdown("<div style='text-align: center;'>These utilities were developed by Ujwala Yadav and Deepti B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)

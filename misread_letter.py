@@ -131,15 +131,16 @@ def compare_lines(text1, text2):
         line2 = clean_text(line2)
         seq1_tokens = split_kannada_text_diff(line1)
         seq2_tokens = split_kannada_text_diff(line2)
-#       differences_seq = get_differences2(seq1_tokens, seq2_tokens)
-#       results.append((line1, line2, differences_seq))
-#   return results
+
         differences_seq = get_differences2(seq1_tokens, seq2_tokens)
 
-        # This line is modified: Join the differences into a single line with ';' separator
-        formatted_differences = '; '.join([f"({''.join(diff[0])}, {''.join(diff[1])})" for diff in differences_seq])
+        # Initialize formatted_differences for each line
+        formatted_differences = '; '.join([
+            f"""(<span style='color:red'>{'&nbsp;' if not diff[0] else ''.join(diff[0])}</span>, <span style='color:blue'>{'&nbsp;' if not diff[1] else ''.join(diff[1])}</span>)"""
+            for diff in differences_seq
+        ])
 
-        results.append((line1, line2, formatted_differences))  # Store formatted_differences instead of differences_seq
+        results.append((line1, line2, formatted_differences))
     return results
 
 def process_text(text):
@@ -237,13 +238,14 @@ with col2:
 
 if st.button("Compare Inscriptions"):
     comparison_results = compare_lines(seq1, seq2)
-    for i, (line1, line2, differences) in enumerate(comparison_results):  # Use 'differences' here, not 'diff'
+    for i, (line1, line2, differences) in enumerate(comparison_results):
         st.write(f"Line {i+1}:")
         st.write(f"Sentence in Inscription 1: {line1}")
         st.write(f"Sentence in Inscription 2: {line2}")
-        if differences:  # Print differences only if not empty
+        if differences:
             st.write("Differences in Sentences")
-            st.write(differences)  # Print the formatted differences directly
+            # Use st.markdown to render the formatted differences
+            st.markdown(differences, unsafe_allow_html=True) 
         st.write("---")
 
 st.markdown("<div style='text-align: center;'>The first version of these utilities were developed by Ujwala Yadav and Deepti B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)

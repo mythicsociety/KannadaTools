@@ -121,12 +121,12 @@ def get_differences2(seq1, seq2):
             differences.append(('', seq2[i2]))
     return differences
 
-def compare_lines(text1, text2):
+def compare_lines(text1, text2, color1, color2):
     lines1 = text1.splitlines()
     lines2 = text2.splitlines()
     max_len = max(len(lines1), len(lines2))
     results = []
-    total_differences = 0
+    total_differences = 0  # Initialize total_differences here
 
     for i in range(max_len):
         line1 = lines1[i] if i < len(lines1) else ""
@@ -138,29 +138,28 @@ def compare_lines(text1, text2):
 
         differences_seq = get_differences2(seq1_tokens, seq2_tokens)
 
-        # Highlight differing aksharas in line2 in blue, the rest in red
+        # Highlight differing aksharas in line2 in color2, the rest in color1
         highlighted_line2 = ""
         j = 0
         for diff in differences_seq:
             if diff[0]:
                 while j < len(seq2_tokens) and seq2_tokens[j] != diff[1]:
-                    highlighted_line2 += f"<span style='color:red'>{seq2_tokens[j]}</span>"  # Red for unchanged
+                    highlighted_line2 += f"<span style='color:{color1}'>{seq2_tokens[j]}</span>"
                     j += 1
                 if j < len(seq2_tokens) and seq2_tokens[j] == diff[1]:
-                    highlighted_line2 += f"<span style='color:blue'>{seq2_tokens[j]}</span>"  # Blue for differing
+                    highlighted_line2 += f"<span style='color:{color2}'>{seq2_tokens[j]}</span>"
                     j += 1
-            else:  # Insertion in seq2
-                highlighted_line2 += f"<span style='color:blue'>{diff[1]}</span>"  # Blue for differing
+            else:
+                highlighted_line2 += f"<span style='color:{color2}'>{diff[1]}</span>"
 
-        # Add any remaining aksharas from seq2 in red
-        highlighted_line2 += "".join([f"<span style='color:red'>{token}</span>" for token in seq2_tokens[j:]])
+        highlighted_line2 += "".join([f"<span style='color:{color1}'>{token}</span>" for token in seq2_tokens[j:]])
 
         formatted_differences = '; '.join([
-            f"""(<span style='color:red'>{'&nbsp;' if not diff[0] else ''.join(diff[0])}</span>, <span style='color:blue'>{'&nbsp;' if not diff[1] else ''.join(diff[1])}</span>)"""
+            f"""(<span style='color:{color1}'>{'&nbsp;' if not diff[0] else ''.join(diff[0])}</span>, <span style='color:{color2}'>{'&nbsp;' if not diff[1] else ''.join(diff[1])}</span>)"""
             for diff in differences_seq
         ])
 
-        line_differences = 0
+        line_differences = 0  # Initialize line_differences for each line
         for diff in differences_seq:
             if diff[1]:
                 line_differences += len(split_kannada_text(diff[1]))
@@ -232,17 +231,21 @@ st.markdown("""
 st.markdown("<span class='note-line' style='color:blue'>*Note: This program has been designed and tested for only Kannada, it will not work for other Indic scripts*</span>", unsafe_allow_html=True)
 
 # Potential Misread Akshara Predictor section
-st.markdown("<div class='custom-header'>Potential Misread Akshara Predictor</div>", unsafe_allow_html=True) 
+st.markdown("<div class='custom-header'>Potential Misread Akshara Predictor</div>", unsafe_allow_html=True)
 with st.expander(""):
     sentence = st.text_input("Enter Kannada sentences from an inscription to predict potential misread aksharas and corrections")
     if sentence:
-        result = predict_miss_read(sentence, miss_read_dict)
-        if result:
-            st.write("Observations made during the correction of over 200 inscriptions from the Bengaluru region suggest that the following aksharas in the provided inscription may have been misread:")
-            for miss_read, corrections in result.items():
-                st.write(f"'{miss_read}' could be misread as {', '.join(corrections)}")
+        # Input validation: Check for Kannada characters
+        if not re.search(r'[\u0C80-\u0CFF]', sentence):
+            st.warning("Please enter text in Kannada script.")
         else:
-            st.write("No possible misreads found.")
+            result = predict_miss_read(sentence, miss_read_dict)
+            if result:
+                st.write("Observations made during the correction of over 200 inscriptions from the Bengaluru region suggest that the following aksharas in the provided inscription may have been misread:")
+                for miss_read, corrections in result.items():
+                    st.write(f"'{miss_read}' could be misread as {', '.join(corrections)}")
+            else:
+                st.write("No possible misreads found.")
 
 # Aksharas Counter section
 st.markdown("<div class='custom-header'>Aksharas Counter</div>", unsafe_allow_html=True)
@@ -250,23 +253,29 @@ with st.expander(""):
     text = st.text_area("Enter the Kannada inscription text to count the number of aksharas in:", "")
     st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be counted</span>", unsafe_allow_html=True)
     if st.button("Process Text"):
-        try:
-            line_word_counts, total_words, num_lines = process_text(text)
+        if not text.strip():
+            st.warning("Please enter some text.")
+        # Input validation: Check for Kannada characters
+        elif not re.search(r'[\u0C80-\u0CFF]', text):
+            st.warning("Please enter text in Kannada script.")
+        else:
+            try:
+                line_word_counts, total_words, num_lines = process_text(text)
 
-            st.markdown(f"<span style='color:red'>Total number of aksharas: {total_words}</span>", unsafe_allow_html=True)
-            st.markdown(f"<span style='color:blue'>Total number of sentences: {num_lines}</span>", unsafe_allow_html=True)
-            st.write("---")
+                st.markdown(f"<span style='color:red'>Total number of aksharas: {total_words}</span>", unsafe_allow_html=True)
+                st.markdown(f"<span style='color:blue'>Total number of sentences: {num_lines}</span>", unsafe_allow_html=True)
+                st.write("---")
 
-            for i, word_count in enumerate(line_word_counts):
-                st.write(f"Number of aksharas in sentence {i+1} is {word_count}")
+                for i, word_count in enumerate(line_word_counts):
+                    st.write(f"Number of aksharas in sentence {i+1} is {word_count}")
 
-        except Exception as e:
-            st.error(f"An unexpected error occurred: {e}")
+            except Exception as e:
+                st.error(f"An unexpected error occurred: {e}")
 
 # Compare The Text of Two Kannada Inscriptions section
 st.markdown("<div class='custom-header'>Compare The Text of Two Kannada Inscriptions</div>", unsafe_allow_html=True)
 with st.expander(""):
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2)  # Create two columns for side-by-side layout
 
     with col1:
         seq1 = st.text_area("Enter text of inscription 1:", "")
@@ -274,38 +283,48 @@ with st.expander(""):
             line_word_counts1, total_aksharas1, num_lines1 = process_text(seq1)
             st.write(f"Inscription 1 contains {total_aksharas1} aksharas in {num_lines1} lines")
 
+        # Add color picker for Inscription 1 beneath its text area
+        color1 = st.color_picker("Select color for Inscription 1:", "#FF0000") 
+
     with col2:
         seq2 = st.text_area("Enter text of inscription 2:", "")
         if seq2:
-            line_word_counts2, total_aksharas2, num_lines2 = process_text(seq2)  # Assign num_lines2 here
-            st.write(f"Inscription 2 contains  {total_aksharas2} aksharas in {num_lines2} lines") 
+            line_word_counts2, total_aksharas2, num_lines2 = process_text(seq2) 
+            st.write(f"Inscription 2 contains  {total_aksharas2} aksharas in {num_lines2} lines")
+
+        # Add color picker for Inscription 2 beneath its text area
+        color2 = st.color_picker("Select color for Inscription 2:", "#0000FF") 
 
     st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True)
-    if st.button("Compare Inscriptions"):
-        comparison_results, total_differences = compare_lines(seq1, seq2)
-
-        for i, (line1, highlighted_line2, differences, line_differences) in enumerate(comparison_results):
-            if differences:
-                st.write(f"Differences in inscription texts in line {i+1}: ({line_differences} aksharas)")
-
-                st.markdown(f"<span style='color:red'>{line1}</span>", unsafe_allow_html=True)
-                st.markdown(highlighted_line2, unsafe_allow_html=True) 
-
-                st.markdown(differences, unsafe_allow_html=True)
-
-            st.write("---")
-
-        # Calculate and display the difference rate
-        if total_aksharas1 > 0:  # Avoid division by zero
-            difference_rate = total_differences / total_aksharas1
-            st.write(f"{total_differences} aksharas are different between inscription 2 and inscription 1. Therefore, the difference rate is {difference_rate:.2%}")
-        #   st.write(f"The difference rate is {difference_rate:.2%}") 
+if st.button("Compare Inscriptions"):
+        if not seq1.strip() or not seq2.strip():
+            st.warning("Please enter text in both inscription areas.")
+        elif not re.search(r'[\u0C80-\u0CFF]', seq1) or not re.search(r'[\u0C80-\u0CFF]', seq2):
+            st.warning("Please enter text in Kannada script in both inscription areas.")
         else:
-            st.write("Cannot calculate difference rate as Inscription 1 has no aksharas.")
-        # Add the full-width double separator line with custom CSS
-        st.markdown("""
-        <hr style="height:2px;border-width:0;color:gray;background-color:gray">
-        """, unsafe_allow_html=True)
+            with st.spinner("Comparing inscriptions..."):
+                comparison_results, total_differences = compare_lines(seq1, seq2, color1, color2)
+
+            for i, (line1, highlighted_line2, differences, line_differences) in enumerate(comparison_results):
+                if differences:
+                    st.write(f"Differences in inscription texts in line {i+1}: ({line_differences} aksharas)")
+
+                    st.markdown(f"<span style='color:{color1}'>{line1}</span>", unsafe_allow_html=True)
+                    st.markdown(highlighted_line2, unsafe_allow_html=True) 
+
+                    st.markdown(differences, unsafe_allow_html=True)
+
+                st.write("---")
+
+            if total_aksharas1 > 0:
+                difference_rate = total_differences / total_aksharas1
+                st.write(f"{total_differences} aksharas are different between inscription 2 and inscription 1. Therefore, the difference rate is {difference_rate:.2%}")
+            else:
+                st.write("Cannot calculate difference rate as Inscription 1 has no aksharas.")
+
+            st.markdown("""
+            <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+            """, unsafe_allow_html=True)
 
 # Attribution at the bottom
 st.markdown("<div style='text-align: center;'>The first version of these software utilities were developed by Ujwala Yadav and Deepthi B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)

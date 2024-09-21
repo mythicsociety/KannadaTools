@@ -296,7 +296,7 @@ with st.expander(""):
         color2 = st.color_picker("Select color for Inscription 2:", "#0000FF") 
 
     st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True)
-if st.button("Compare Inscriptions"):
+    if st.button("Compare Inscriptions"):
         if not seq1.strip() or not seq2.strip():
             st.warning("Please enter text in both inscription areas.")
         elif not re.search(r'[\u0C80-\u0CFF]', seq1) or not re.search(r'[\u0C80-\u0CFF]', seq2):
@@ -306,7 +306,7 @@ if st.button("Compare Inscriptions"):
                 comparison_results, total_differences = compare_lines(seq1, seq2, color1, color2)
 
             for i, (line1, highlighted_line2, differences, line_differences) in enumerate(comparison_results):
-                if differences:
+                if differences:  # Only print if there are differences
                     st.write(f"Differences in inscription texts in line {i+1}: ({line_differences} aksharas)")
 
                     st.markdown(f"<span style='color:{color1}'>{line1}</span>", unsafe_allow_html=True)
@@ -314,7 +314,7 @@ if st.button("Compare Inscriptions"):
 
                     st.markdown(differences, unsafe_allow_html=True)
 
-                st.write("---")
+                    st.write("---")
 
             if total_aksharas1 > 0:
                 difference_rate = total_differences / total_aksharas1

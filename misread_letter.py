@@ -5,8 +5,9 @@ import unicodedata
 import Levenshtein
 
 # Define the URL to your Excel file hosted on GitHub (raw format)
-FILE_URL = "https://github.com/saatvikpaul19/myt/raw/0aed2a4cdd23a0028264c8984359c85879131e77/mythic_society%20(1).xlsx"
-# FILE_URL = "https://github.com/mythicsociety/KannadaTools/blob/94814a2766fd22e89e24976eded769d45a82560a/mythic_society%20(1).xlsx"
+# FILE_URL = "https://github.com/mythicsociety/KannadaTools/raw/5dd7b887899184df5965a19d6ddc5914bd6d37ce/mythic_society.xlsx"
+# FILE_URL = "https://github.com/saatvikpaul19/myt/raw/0aed2a4cdd23a0028264c8984359c85879131e77/mythic_society%20(1).xlsx"
+FILE_URL = "https://github.com/mythicsociety/KannadaTools/raw/94814a2766fd22e89e24976eded769d45a82560a/mythic_society%20(1).xlsx"
 
 # Load the data from the Excel file
 df = pd.read_excel(FILE_URL)

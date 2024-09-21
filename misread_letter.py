@@ -242,22 +242,41 @@ with st.expander(""):
 
     with col1:
         seq1 = st.text_area("Enter text of inscription 1:", "")
+        if seq1:
+            _, total_aksharas1, _ = process_text(seq1)
+            st.write(f"Total Aksharas in Inscription 1: {total_aksharas1}")
 
     with col2:
         seq2 = st.text_area("Enter text of inscription 2:", "")
+        if seq2:
+            _, total_aksharas2, _ = process_text(seq2)
+            st.write(f"Total Aksharas in Inscription 2: {total_aksharas2}")
 
     st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be compared</span>", unsafe_allow_html=True)
-    st.write("Differences in inscription texts are given below in the format - (character in inscription 1, corresponding character in inscription 2)")   
+    st.write("Differences in inscription texts are given below in the format - (character in inscription 1, corresponding character in inscription 2)".replace(u'\xa0', u' '))
     if st.button("Compare Inscriptions"):
         comparison_results = compare_lines(seq1, seq2)
+        total_differences = 0 
         for i, (line1, line2, differences) in enumerate(comparison_results):
-            st.write(f"Line {i+1}:")
-            st.markdown(f"Text in Inscription 1: <span style='color:red'>{line1}</span>", unsafe_allow_html=True)
-            st.markdown(f"Text in Inscription 2: <span style='color:blue'>{line2}</span>", unsafe_allow_html=True)     
             if differences:
                 st.write("Differences in inscription texts are ")
                 st.markdown(differences, unsafe_allow_html=True)
+                for diff in differences.split(';'):
+                    if diff.strip():
+                        split_result = diff.split(',')
+                        if len(split_result) == 2: 
+                            _, change_in_inscription2 = split_result
+                            if change_in_inscription2.strip() != '<span style=\'color:blue\'>&nbsp;</span>': 
+                                total_differences += 1
             st.write("---")
+
+        # Calculate and display the difference rate
+        if total_aksharas1 > 0:  # Avoid division by zero
+            difference_rate = total_differences / total_aksharas1
+            st.write(f"The total count of differences between Inscription 2 and Inscription 1 is {total_differences} and the difference rate is {difference_rate:.2%}")
+        #   st.write(f"The difference rate is {difference_rate:.2%}") 
+        else:
+            st.write("Cannot calculate difference rate as Inscription 1 has no aksharas.")
 
 # Attribution at the bottom
 st.markdown("<div style='text-align: center;'>The first version of these software utilities were developed by Ujwala Yadav and Deepthi B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)

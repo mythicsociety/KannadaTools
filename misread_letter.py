@@ -251,10 +251,10 @@ with st.expander(""):
         comparison_results = compare_lines(seq1, seq2)
         for i, (line1, line2, differences) in enumerate(comparison_results):
             st.write(f"Line {i+1}:")
-            st.markdown(f"Sentence in Inscription 1: <span style='color:red'>{line1}</span>", unsafe_allow_html=True)
-            st.markdown(f"Sentence in Inscription 2: <span style='color:blue'>{line2}</span>", unsafe_allow_html=True)
+            st.markdown(f"Text in Inscription 1: <span style='color:red'>{line1}</span>", unsafe_allow_html=True)
+            st.markdown(f"Text in Inscription 2: <span style='color:blue'>{line2}</span>", unsafe_allow_html=True)
             if differences:
-                st.write("Differences in Sentences")
+                st.write("Differences in inscription texts are given below in the format - (character in inscription 1, corresponding character in inscription 2)")
                 st.markdown(differences, unsafe_allow_html=True)
             st.write("---")
 

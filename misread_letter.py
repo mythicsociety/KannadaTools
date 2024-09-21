@@ -257,4 +257,4 @@ with st.expander(""):
             st.write("---")
 
 # Attribution at the bottom
-st.markdown("<div style='text-align: center;'>The first version of these software utilities were developed by Ujwala Yadav and Deepti B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center;'>The first version of these software utilities were developed by Ujwala Yadav and Deepthi B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)

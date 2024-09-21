@@ -246,6 +246,7 @@ with st.expander(""):
     with col2:
         seq2 = st.text_area("Enter text of inscription 2:", "")
 
+    st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be compared</span>", unsafe_allow_html=True)
     if st.button("Compare Inscriptions"):
         comparison_results = compare_lines(seq1, seq2)
         for i, (line1, line2, differences) in enumerate(comparison_results):

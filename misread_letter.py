@@ -126,7 +126,7 @@ def compare_lines(text1, text2):
     lines2 = text2.splitlines()
     max_len = max(len(lines1), len(lines2))
     results = []
-    total_differences = 0  # Initialize total_differences here
+    total_differences = 0
 
     for i in range(max_len):
         line1 = lines1[i] if i < len(lines1) else ""
@@ -138,22 +138,38 @@ def compare_lines(text1, text2):
 
         differences_seq = get_differences2(seq1_tokens, seq2_tokens)
 
+        # Highlight differing aksharas in line2 in blue, the rest in red
+        highlighted_line2 = ""
+        j = 0
+        for diff in differences_seq:
+            if diff[0]:
+                while j < len(seq2_tokens) and seq2_tokens[j] != diff[1]:
+                    highlighted_line2 += f"<span style='color:red'>{seq2_tokens[j]}</span>"  # Red for unchanged
+                    j += 1
+                if j < len(seq2_tokens) and seq2_tokens[j] == diff[1]:
+                    highlighted_line2 += f"<span style='color:blue'>{seq2_tokens[j]}</span>"  # Blue for differing
+                    j += 1
+            else:  # Insertion in seq2
+                highlighted_line2 += f"<span style='color:blue'>{diff[1]}</span>"  # Blue for differing
+
+        # Add any remaining aksharas from seq2 in red
+        highlighted_line2 += "".join([f"<span style='color:red'>{token}</span>" for token in seq2_tokens[j:]])
+
         formatted_differences = '; '.join([
             f"""(<span style='color:red'>{'&nbsp;' if not diff[0] else ''.join(diff[0])}</span>, <span style='color:blue'>{'&nbsp;' if not diff[1] else ''.join(diff[1])}</span>)"""
             for diff in differences_seq
         ])
 
-        # Calculate akshara differences for this line
         line_differences = 0
         for diff in differences_seq:
-            if diff[1]:  # Check if there's a change in the second inscription
-                line_differences += len(split_kannada_text(diff[1]))  # Count aksharas in the changed part
+            if diff[1]:
+                line_differences += len(split_kannada_text(diff[1]))
 
-        total_differences += line_differences  # Add to the overall count
+        total_differences += line_differences
 
-        results.append((line1, line2, formatted_differences, line_differences))  # Include line_differences in results
+        results.append((line1, highlighted_line2, formatted_differences, line_differences))
 
-    return results, total_differences  # Return total_differences along with results
+    return results, total_differences
 
 
 def process_text(text):
@@ -268,13 +284,12 @@ with st.expander(""):
     if st.button("Compare Inscriptions"):
         comparison_results, total_differences = compare_lines(seq1, seq2)
 
-        for i, (line1, line2, differences, line_differences) in enumerate(comparison_results):
+        for i, (line1, highlighted_line2, differences, line_differences) in enumerate(comparison_results):
             if differences:
                 st.write(f"Differences in inscription texts in line {i+1}: ({line_differences} aksharas)")
-                
-                # Print the entire lines with specified colors
+
                 st.markdown(f"<span style='color:red'>{line1}</span>", unsafe_allow_html=True)
-                st.markdown(f"<span style='color:blue'>{line2}</span>", unsafe_allow_html=True)
+                st.markdown(highlighted_line2, unsafe_allow_html=True) 
 
                 st.markdown(differences, unsafe_allow_html=True)
 

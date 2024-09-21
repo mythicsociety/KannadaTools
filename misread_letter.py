@@ -71,6 +71,7 @@ def clean_text(text):
     text = re.sub(r'[^\w\s\u0C80-\u0CFF\u200c|]', '', text)
     return text
 
+
 def split_kannada_text_diff(text):
     tokens = []
     i = 0
@@ -125,6 +126,8 @@ def compare_lines(text1, text2):
     lines2 = text2.splitlines()
     max_len = max(len(lines1), len(lines2))
     results = []
+    total_differences = 0  # Initialize total_differences here
+
     for i in range(max_len):
         line1 = lines1[i] if i < len(lines1) else ""
         line2 = lines2[i] if i < len(lines2) else ""
@@ -135,14 +138,23 @@ def compare_lines(text1, text2):
 
         differences_seq = get_differences2(seq1_tokens, seq2_tokens)
 
-        # Initialize formatted_differences for each line
         formatted_differences = '; '.join([
             f"""(<span style='color:red'>{'&nbsp;' if not diff[0] else ''.join(diff[0])}</span>, <span style='color:blue'>{'&nbsp;' if not diff[1] else ''.join(diff[1])}</span>)"""
             for diff in differences_seq
         ])
 
-        results.append((line1, line2, formatted_differences))
-    return results
+        # Calculate akshara differences for this line
+        line_differences = 0
+        for diff in differences_seq:
+            if diff[1]:  # Check if there's a change in the second inscription
+                line_differences += len(split_kannada_text(diff[1]))  # Count aksharas in the changed part
+
+        total_differences += line_differences  # Add to the overall count
+
+        results.append((line1, line2, formatted_differences, line_differences))  # Include line_differences in results
+
+    return results, total_differences  # Return total_differences along with results
+
 
 def process_text(text):
     lines = text.splitlines()
@@ -161,7 +173,7 @@ def process_text(text):
             word_count = len([token for token in word_tokens if token.strip()])
             line_word_counts.append(word_count)
             total_words += word_count
-    return line_word_counts, total_words, len(lines)
+    return line_word_counts, total_words, len(lines)  # Return line_word_counts instead of total_words
 
 # Create the miss_read_dict from the DataFrame
 miss_read_dict = create_miss_read_dict(df)
@@ -253,21 +265,14 @@ with st.expander(""):
             st.write(f"Inscription 2 contains  {total_aksharas2} aksharas in {num_lines2} lines") 
 
     st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True)
-    st.write("Differences in inscription texts are given below in the format - (akshara in inscription 1, corresponding akshara in inscription 2)")
-if st.button("Compare Inscriptions"):
-        comparison_results = compare_lines(seq1, seq2)
-        total_differences = 0 
-        for i, (line1, line2, differences) in enumerate(comparison_results):
+    if st.button("Compare Inscriptions"):
+        comparison_results, total_differences = compare_lines(seq1, seq2)  # Get total_differences directly
+
+        for i, (line1, line2, differences, line_differences) in enumerate(comparison_results):
             if differences:
-                st.write(f"Differences in inscription texts in line {i+1}:")  # Include line number here
+                st.write(f"Differences in inscription texts in line {i+1}: ({line_differences} aksharas)")
                 st.markdown(differences, unsafe_allow_html=True)
-                for diff in differences.split(';'):
-                    if diff.strip():
-                        split_result = diff.split(',')
-                        if len(split_result) == 2: 
-                            _, change_in_inscription2 = split_result
-                            if change_in_inscription2.strip() != '<span style=\'color:blue\'>&nbsp;</span>': 
-                                total_differences += 1
+
             st.write("---")
 
         # Calculate and display the difference rate

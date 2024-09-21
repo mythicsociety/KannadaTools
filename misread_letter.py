@@ -5,9 +5,16 @@ import unicodedata
 import Levenshtein
 
 # Define the URL to your Excel file hosted on GitHub (raw format)
+FILE_URL = "https://github.com/mythicsociety/KannadaTools/raw/94814a2766fd22e89e24976eded769d45a82560a/mythic_society%20(1).xlsx"
+INSCRIPTION_1_COLOR = "#FF0000"  # Default color for Inscription 1
+INSCRIPTION_2_COLOR = "#0000FF"  # Default color for Inscription 2
+KANNADA_CHAR_RANGE = r'[\u0C80-\u0CFF]'  # Regular expression for Kannada characters
+SPECIAL_CHARS_REGEX = r'[^\w\s\u0C80-\u0CFF\u200c|]'  # Regular expression for special characters
+
+# Define the URL to your Excel file hosted on GitHub (raw format)
 # FILE_URL = "https://github.com/mythicsociety/KannadaTools/raw/5dd7b887899184df5965a19d6ddc5914bd6d37ce/mythic_society.xlsx"
 # FILE_URL = "https://github.com/saatvikpaul19/myt/raw/0aed2a4cdd23a0028264c8984359c85879131e77/mythic_society%20(1).xlsx"
-FILE_URL = "https://github.com/mythicsociety/KannadaTools/raw/94814a2766fd22e89e24976eded769d45a82560a/mythic_society%20(1).xlsx"
+# FILE_URL = "https://github.com/mythicsociety/KannadaTools/raw/94814a2766fd22e89e24976eded769d45a82560a/mythic_society%20(1).xlsx"
 
 # Load the data from the Excel file
 df = pd.read_excel(FILE_URL)
@@ -68,7 +75,7 @@ def clean_text(text):
     text = re.sub(r'\[.*?\]', '', text)
     text = re.sub(r'\(.*?\)', '', text)
     text = ' '.join(text.split())
-    text = re.sub(r'[^\w\s\u0C80-\u0CFF\u200c|]', '', text)
+    text = re.sub(SPECIAL_CHARS_REGEX, '', text)
     return text
 
 
@@ -236,7 +243,7 @@ with st.expander(""):
     sentence = st.text_input("Enter Kannada sentences from an inscription to predict potential misread aksharas and corrections")
     if sentence:
         # Input validation: Check for Kannada characters
-        if not re.search(r'[\u0C80-\u0CFF]', sentence):
+        if not re.search(KANNADA_CHAR_RANGE, sentence):
             st.warning("Please enter text in Kannada script.")
         else:
             result = predict_miss_read(sentence, miss_read_dict)
@@ -256,7 +263,7 @@ with st.expander(""):
         if not text.strip():
             st.warning("Please enter some text.")
         # Input validation: Check for Kannada characters
-        elif not re.search(r'[\u0C80-\u0CFF]', text):
+        elif not re.search(KANNADA_CHAR_RANGE, text):
             st.warning("Please enter text in Kannada script.")
         else:
             try:
@@ -284,7 +291,7 @@ with st.expander(""):
             st.write(f"Inscription 1 contains {total_aksharas1} aksharas in {num_lines1} lines")
 
         # Add color picker for Inscription 1 beneath its text area
-        color1 = st.color_picker("Select color for Inscription 1:", "#FF0000") 
+        color1 = st.color_picker("Select color for Inscription 1:", INSCRIPTION_1_COLOR) 
 
     with col2:
         seq2 = st.text_area("Enter text of inscription 2:", "")
@@ -307,7 +314,7 @@ with st.expander(""):
 
             for i, (line1, highlighted_line2, differences, line_differences) in enumerate(comparison_results):
                 if differences:  # Only print if there are differences
-                    st.write(f"Differences in inscription texts in line {i+1}: ({line_differences} aksharas)")
+                    st.write(f" {line_differences} aksharas differ in line {i+1} between inscription 2 and inscription 1")
 
                     st.markdown(f"<span style='color:{color1}'>{line1}</span>", unsafe_allow_html=True)
                     st.markdown(highlighted_line2, unsafe_allow_html=True) 

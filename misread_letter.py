@@ -229,7 +229,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<span class='note-line' style='color:blue'>*Note: While this program has only been tested for Kannada, it may work for other Indic scripts as well*</span>", unsafe_allow_html=True)
+st.markdown("<span class='note-line' style='color:blue'>*Note: This program has been designed and tested for only Kannada, it will not work for other Indic scripts*</span>", unsafe_allow_html=True)
 
 # Potential Misread Akshara Predictor section
 st.markdown("<div class='custom-header'>Potential Misread Akshara Predictor</div>", unsafe_allow_html=True) 

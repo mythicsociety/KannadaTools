@@ -266,11 +266,16 @@ with st.expander(""):
 
     st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True)
     if st.button("Compare Inscriptions"):
-        comparison_results, total_differences = compare_lines(seq1, seq2)  # Get total_differences directly
+        comparison_results, total_differences = compare_lines(seq1, seq2)
 
         for i, (line1, line2, differences, line_differences) in enumerate(comparison_results):
             if differences:
                 st.write(f"Differences in inscription texts in line {i+1}: ({line_differences} aksharas)")
+                
+                # Print the entire lines with specified colors
+                st.markdown(f"<span style='color:red'>{line1}</span>", unsafe_allow_html=True)
+                st.markdown(f"<span style='color:blue'>{line2}</span>", unsafe_allow_html=True)
+
                 st.markdown(differences, unsafe_allow_html=True)
 
             st.write("---")

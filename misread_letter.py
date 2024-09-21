@@ -243,23 +243,23 @@ with st.expander(""):
     with col1:
         seq1 = st.text_area("Enter text of inscription 1:", "")
         if seq1:
-            _, total_aksharas1, _ = process_text(seq1)
-            st.write(f"Total Aksharas in Inscription 1: {total_aksharas1}")
+            line_word_counts1, total_aksharas1, num_lines1 = process_text(seq1)
+            st.write(f"Inscription 1 contains {total_aksharas1} aksharas in {num_lines1} lines")
 
     with col2:
         seq2 = st.text_area("Enter text of inscription 2:", "")
         if seq2:
-            _, total_aksharas2, _ = process_text(seq2)
-            st.write(f"Total Aksharas in Inscription 2: {total_aksharas2}")
+            line_word_counts2, total_aksharas2, num_lines2 = process_text(seq2)  # Assign num_lines2 here
+            st.write(f"Inscription 2 contains  {total_aksharas2} aksharas in {num_lines2} lines") 
 
-    st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be compared</span>", unsafe_allow_html=True)
-    st.write("Differences in inscription texts are given below in the format - (character in inscription 1, corresponding character in inscription 2)".replace(u'\xa0', u' '))
-    if st.button("Compare Inscriptions"):
+    st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True)
+    st.write("Differences in inscription texts are given below in the format - (akshara in inscription 1, corresponding akshara in inscription 2)")
+if st.button("Compare Inscriptions"):
         comparison_results = compare_lines(seq1, seq2)
         total_differences = 0 
         for i, (line1, line2, differences) in enumerate(comparison_results):
             if differences:
-                st.write("Differences in inscription texts are ")
+                st.write(f"Differences in inscription texts in line {i+1}:")  # Include line number here
                 st.markdown(differences, unsafe_allow_html=True)
                 for diff in differences.split(';'):
                     if diff.strip():
@@ -273,10 +273,14 @@ with st.expander(""):
         # Calculate and display the difference rate
         if total_aksharas1 > 0:  # Avoid division by zero
             difference_rate = total_differences / total_aksharas1
-            st.write(f"The total count of differences between Inscription 2 and Inscription 1 is {total_differences} and the difference rate is {difference_rate:.2%}")
+            st.write(f"{total_differences} aksharas are different between inscription 2 and inscription 1. Therefore, the difference rate is {difference_rate:.2%}")
         #   st.write(f"The difference rate is {difference_rate:.2%}") 
         else:
             st.write("Cannot calculate difference rate as Inscription 1 has no aksharas.")
+        # Add the full-width double separator line with custom CSS
+        st.markdown("""
+        <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+        """, unsafe_allow_html=True)
 
 # Attribution at the bottom
 st.markdown("<div style='text-align: center;'>The first version of these software utilities were developed by Ujwala Yadav and Deepthi B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)

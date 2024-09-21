@@ -166,25 +166,6 @@ def process_text(text):
 miss_read_dict = create_miss_read_dict(df)
 
 # Streamlit UI
-
-import streamlit as st
-import pandas as pd
-import re
-import unicodedata
-import Levenshtein
-
-# ... (your existing code for functions and data loading) ...
-
-# Streamlit UI
-import streamlit as st
-import pandas as pd
-import re
-import unicodedata
-import Levenshtein
-
-# ... (your existing code for functions and data loading) ...
-
-# Streamlit UI
 st.markdown("""
 <style>
 .title-container {
@@ -215,7 +196,7 @@ st.markdown("""
 <div class="title-container">
 <span class="title-line1">Software Utilities for Working With Kannada Inscriptions</span>
 <br>
-<span class="title-line2">These software utilities are used extensively by the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project Team. They were developed because off-the-shelf software is unable to perform these tasks correctly</span>
+<span class="title-line2">These software utilities are used extensively by the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project Team. They were developed because off-the-shelf software is unable to perform these tasks correctly.</span>
 </div>
 """, unsafe_allow_html=True)
 

@@ -354,7 +354,7 @@ with st.expander(""):  # Create an expandable section for the predictor
     if sentence:  # If the user has entered some text
         # Input validation: Check for Kannada characters
         if not re.search(KANNADA_CHAR_RANGE, sentence):  # Check if the input contains Kannada characters
-            st.warning("Please enter text in Kannada script.")  # Display a warning if no Kannada characters are found
+            st.warning("Please enter only Kannada text")  # Display a warning if no Kannada characters are found
         else:
             result = predict_miss_read(sentence, miss_read_dict)  # Predict potential misreads using the provided sentence and the miss_read_dict
             if result:  # If there are potential misreads
@@ -371,10 +371,10 @@ with st.expander(""):  # Create an expandable section for the aksharas counter
     st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be counted</span>", unsafe_allow_html=True)  # Display a note about special characters
     if st.button("Process Text"):  # If the "Process Text" button is clicked
         if not text.strip():  # If the input text is empty
-            st.warning("Please enter some text.")  # Display a warning
+            st.warning("Please enter some Kannada text")  # Display a warning
         # Input validation: Check for Kannada characters
         elif not re.search(KANNADA_CHAR_RANGE, text):  # Check if the input contains Kannada characters
-            st.warning("Please enter text in Kannada script.")  # Display a warning if no Kannada characters are found
+            st.warning("Please enter text in Kannada script only")  # Display a warning if no Kannada characters are found
         else:
             try:
                 line_word_counts, total_words, num_lines = process_text(text)  # Process the text to get akshara counts and number of lines
@@ -395,13 +395,13 @@ with st.expander(""):  # Create an expandable section for inscription comparison
     col1, col2 = st.columns(2)  # Create two columns for side-by-side layout
 
     with col1:  # First column for inscription 1
-        seq1 = st.text_area("Enter text of inscription 1:", "")  # Get user input for the first inscription
+        seq1 = st.text_area("Enter Kannada text of inscription 1 in the text box below:", "")  # Get user input for the first inscription
 
         # Add color picker for Inscription 1 beneath its text area
         color1 = st.color_picker("Select color for Inscription 1:", INSCRIPTION_1_COLOR) 
 
     with col2:  # Second column for inscription 2
-        seq2 = st.text_area("Enter text of inscription 2:", "")  # Get user input for the second inscription
+        seq2 = st.text_area("Enter Kannada text of inscription 2 in the text box below:", "")  # Get user input for the second inscription
 
         # Add color picker for Inscription 2 beneath its text area
         color2 = st.color_picker("Select color for Inscription 2:", INSCRIPTION_2_COLOR) 
@@ -409,10 +409,10 @@ with st.expander(""):  # Create an expandable section for inscription comparison
     st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True)  # Display a note about special characters
     if st.button("Compare Inscriptions"):  # If the "Compare Inscriptions" button is clicked
         if not seq1.strip() or not seq2.strip():  # If either inscription text is empty
-            st.warning("Please enter text in both inscription areas.")  # Display a warning
+            st.warning("Please enter Kannada text in both text boxes")  # Display a warning
         # Input validation: Check for Kannada characters BEFORE processing
         elif not re.search(KANNADA_CHAR_RANGE, seq1) or not re.search(KANNADA_CHAR_RANGE, seq2):  # Check if both inputs contain Kannada characters
-            st.warning("Please enter text in Kannada script in both inscription areas.")  # Display a warning if no Kannada characters are found
+            st.warning("Please enter text in Kannada script only in both text boxes")  # Display a warning if no Kannada characters are found
         else:
             # Now process the text to get akshara counts and number of lines
             if seq1: 
@@ -441,7 +441,7 @@ with st.expander(""):  # Create an expandable section for inscription comparison
                 difference_rate = total_differences / total_aksharas1  # Calculate the difference rate
                 st.write(f"{total_differences} aksharas are different between inscription 2 and inscription 1. Therefore, the difference rate is {difference_rate:.2%}")  # Display the total differences and the difference rate
             else:
-                st.write("Cannot calculate difference rate as Inscription 1 has no aksharas.")  # Display a message if inscription 1 is empty
+                st.write("Cannot calculate difference rate as inscription 1 has no aksharas.")  # Display a message if inscription 1 is empty
 
             st.markdown("""
             <hr style="height:2px;border-width:0;color:gray;background-color:gray">

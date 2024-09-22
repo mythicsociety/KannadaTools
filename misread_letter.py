@@ -406,7 +406,9 @@ with st.expander(""):  # Create an expandable section for inscription comparison
         # Add color picker for Inscription 2 beneath its text area
         color2 = st.color_picker("Select color for Inscription 2:", INSCRIPTION_2_COLOR) 
 
-    st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True)  # Display a note about special characters
+    
+    st.markdown("<span class='note-line' style='color:blue'>Note: 1) Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True)  # Display a note about special characters
+    st.markdown("<span class='note-line' style='color:blue'>      2) The coloured differences indicated below for inscription 2 lines may be wrong when the line contains a '0'. Please recheck the output for all lines containing 0s</span>", unsafe_allow_html=True)  # Display a note about special characters
     if st.button("Compare Inscriptions"):  # If the "Compare Inscriptions" button is clicked
         if not seq1.strip() or not seq2.strip():  # If either inscription text is empty
             st.warning("Please enter Kannada text in both text boxes")  # Display a warning
@@ -427,7 +429,7 @@ with st.expander(""):  # Create an expandable section for inscription comparison
                 comparison_results, total_differences = compare_lines(seq1, seq2, color1, color2)  # Compare the inscriptions and get the results
 
             for i, (line1, highlighted_line2, differences, line_differences) in enumerate(comparison_results):  # Iterate through the comparison results for each line
-                if differences:  # Only print if there are differences in the line
+                  
                     st.write(f" {line_differences} aksharas differ in line {i+1} between inscription 2 and inscription 1")  # Display the number of differing aksharas in the line
 
                     st.markdown(f"<span style='color:{color1}'>{line1}</span>", unsafe_allow_html=True)  # Display the original line from inscription 1

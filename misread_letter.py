@@ -380,17 +380,19 @@ with st.expander(""):  # Create an expandable section for the aksharas counter
             st.warning("Please enter text in Kannada script only")  # Display a warning if no Kannada characters are found
         else:
             try:
-                line_word_counts, total_words, num_lines = process_text(text)  # Process the text to get akshara counts and number of lines
+                line_word_counts, total_words, num_lines = process_text(text)
 
-                st.markdown(f"<span style='color:red'>Total number of aksharas: {total_words}</span>", unsafe_allow_html=True)  # Display the total number of aksharas
-                st.markdown(f"<span style='color:blue'>Total number of sentences: {num_lines}</span>", unsafe_allow_html=True)  # Display the total number of sentences
-                st.write("---")  # Add a separator
+                # Modified line to display aksharas in red and lines in blue
+                st.markdown(f"This inscription contains <span style='color:red'>{total_words} aksharas</span> in <span style='color:blue'>{num_lines} lines</span>.", unsafe_allow_html=True) 
 
-                for i, word_count in enumerate(line_word_counts):  # Iterate through the akshara counts for each line
-                    st.write(f"Number of aksharas in sentence {i+1} is {word_count}")  # Display the akshara count for each sentence
+                st.write("---")
 
-            except Exception as e:  # Handle any unexpected errors
-                st.error(f"An unexpected error occurred: {e}")  # Display an error message
+                for i, word_count in enumerate(line_word_counts):
+                    # Modified line to display the desired output with colors
+                    st.markdown(f"<span style='color:red'>Line {i+1}</span> contains <span style='color:blue'>{word_count}</span> aksharas.", unsafe_allow_html=True) 
+
+            except Exception as e:
+                st.error(f"An unexpected error occurred: {e}")
 
 # Compare The Text of Two Kannada Inscriptions section
 st.markdown("<div class='custom-header'>Compare The Text of Two Kannada Inscriptions</div>", unsafe_allow_html=True) 

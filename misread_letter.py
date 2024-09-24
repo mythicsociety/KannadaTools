@@ -369,6 +369,7 @@ with st.expander(""):  # Create an expandable section for the aksharas counter
             except Exception as e:
                 st.error(f"An unexpected error occurred: {e}")
 
+
 # Compare The Text of Two Kannada Inscriptions section
 st.markdown("<div class='custom-header'>Compare The Text of Two Kannada Inscriptions</div>", unsafe_allow_html=True) 
 with st.expander(""): 
@@ -400,31 +401,31 @@ with st.expander(""):
             # Process the text to get akshara counts and number of lines
             if seq1: 
                 line_word_counts1, total_aksharas1, num_lines1 = process_text(seq1) 
-                st.write(f"Inscription 1 contains {total_aksharas1} aksharas in {num_lines1} lines")  # Display akshara count for the first inscription
+    st.write(f"Inscription 1 contains {total_aksharas1} aksharas in {num_lines1} lines")  # Display akshara count for the first inscription
 
-            if seq2: 
-                line_word_counts2, total_aksharas2, num_lines2 = process_text(seq2)
-                st.write(f"Inscription 2 contains  {total_aksharas2} aksharas in {num_lines2} lines")  # Display akshara count for the second inscription
+if seq2: 
+    line_word_counts2, total_aksharas2, num_lines2 = process_text(seq2)
+    st.write(f"Inscription 2 contains  {total_aksharas2} aksharas in {num_lines2} lines")  # Display akshara count for the second inscription
 
-            with st.spinner("Comparing inscriptions..."):  # Display a spinner while comparing
-                comparison_results, total_differences = compare_lines(seq1, seq2, color1, color2)  # Compare the inscriptions
+with st.spinner("Comparing inscriptions..."):  # Display a spinner while comparing
+    comparison_results, total_differences = compare_lines(seq1, seq2, color1, color2)  # Compare the inscriptions
 
-            for i, (line1, highlighted_line2, differences, line_differences) in enumerate(comparison_results): 
-                st.write(f"Line {i+1} has {line_differences} akshara differences between inscription 2 and inscription 1")  # Display the number of differences for each line
-                st.markdown(f"<span style='color:{color1}'>{line1}</span>", unsafe_allow_html=True)  # Display the first line with color
-                st.markdown(highlighted_line2, unsafe_allow_html=True)  # Display the second line with highlighted differences
-                st.markdown(differences, unsafe_allow_html=True)  # Display the formatted differences
-                st.write("---")  # Separator for each line comparison
+for i, (line1, highlighted_line2, differences, line_differences) in enumerate(comparison_results): 
+    st.write(f"Line {i+1} has {line_differences} akshara differences between inscription 2 and inscription 1")  # Display the number of differences for each line
+    st.markdown(f"<span style='color:{color1}'>{line1}</span>", unsafe_allow_html=True)  # Display the first line with color
+    st.markdown(highlighted_line2, unsafe_allow_html=True)  # Display the second line with highlighted differences
+    st.markdown(differences, unsafe_allow_html=True)  # Display the formatted differences
+    st.write("---")  # Separator for each line comparison
 
-            if total_aksharas1 > 0: 
-                difference_rate = total_differences / total_aksharas1 
-                st.write(f"{total_differences} aksharas are different between inscription 2 and inscription 1. Therefore, the difference rate is {difference_rate:.2%}")  # Display the total differences and difference rate
-            else:
-                st.write("Cannot calculate difference rate as inscription 1 has no aksharas.")  # Handle case where the first inscription has no aksharas
+if total_aksharas1 > 0: 
+    difference_rate = total_differences / total_aksharas1 
+    st.write(f"{total_differences} aksharas are different between inscription 2 and inscription 1. Therefore, the difference rate is {difference_rate:.2%}")  # Display the total differences and difference rate
+else:
+    st.write("Cannot calculate difference rate as inscription 1 has no aksharas.")  # Handle case where the first inscription has no aksharas
 
-            st.markdown("""
-            <hr style="height:2px;border-width:0;color:gray;background-color:gray">
-            """, unsafe_allow_html=True)  # Horizontal line separator
+st.markdown("""
+<hr style="height:2px;border-width:0;color:gray;background-color:gray">
+""", unsafe_allow_html=True)  # Horizontal line separator
 
 # Attribution at the bottom
 st.markdown("<div style='text-align: center;'>The first version of these software utilities were developed by Ujwala Yadav and Deepthi B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)  # Display attribution information

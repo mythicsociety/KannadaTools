@@ -17,6 +17,7 @@ def load_data():
     """Loads data from the Excel file at FILE_URL."""
     return pd.read_excel(FILE_URL)
 
+# Load the DataFrame
 df = load_data()
 
 # Function to split Kannada text into tokens
@@ -57,7 +58,6 @@ def split_kannada_text(text, preserve_spaces=False):
 
     return tokens  # Return the list of tokens
 
-
 # Function to create the miss_read_dict from the DataFrame, also caching
 @st.cache_resource 
 def create_miss_read_dict_cached(df):
@@ -85,7 +85,6 @@ def create_miss_read_dict_cached(df):
 
     return miss_read_dict  # Return the dictionary of misread aksharas and their corrections
 
-
 # Function to predict possible miss-reads in a sentence
 def predict_miss_read(sentence, miss_read_dict):
     """
@@ -107,7 +106,6 @@ def predict_miss_read(sentence, miss_read_dict):
 
     return possible_misreads  # Return the dictionary of possible misreads
 
-
 # Function to clean text
 def clean_text(text):
     """
@@ -125,29 +123,29 @@ def clean_text(text):
     text = re.sub(SPECIAL_CHARS_REGEX, '', text)  # Remove special characters
     return text
 
-
+# Function to split Kannada text into tokens, preserving whitespace
 def split_kannada_text_diff(text):
     """
-    Splits Kannada text into tokens, preserving whitespace
+    Splits Kannada text into tokens, preserving whitespace.
 
     Args:
-        text: the Kannada text to split
+        text: The Kannada text to split.
 
     Returns:
-        a list of Kannada tokens, including whitespace as separate tokens
+        A list of Kannada tokens, including whitespace as separate tokens.
     """
     return split_kannada_text(text, preserve_spaces=True)
 
-
+# Function to count words (aksharas) in Kannada text
 def count_words(text):
     """
     Counts the number of words (aksharas) in the given Kannada text.
 
     Args:
-        text: The Kannada text to be processed
+        text: The Kannada text to be processed.
 
     Returns:
-        The total number of words (aksharas) in the text
+        The total number of words (aksharas) in the text.
     """
     text = clean_text(text)
     words = re.split(r'(\s+|\|)', text)
@@ -161,40 +159,18 @@ def count_words(text):
     total_word_count = len(tokens)
     return total_word_count
 
+# Function to get differences between two sequences using Levenshtein distance
 def get_differences2(seq1, seq2):
     """
     Compares two sequences and returns the differences between them using Levenshtein distance.
 
     Args:
-        seq1: The first sequence to compare
-        seq2: The second sequence to compare
+        seq1: The first sequence to compare.
+        seq2: The second sequence to compare.
 
     Returns:
         A list of tuples representing the differences between the sequences. Each tuple contains
-        the corresponding elements from seq1 and seq2 that are different
-    """
-    edit_ops = Levenshtein.editops(seq1, seq2)
-    differences = []
-    for op, i1, i2 in edit_ops:
-        if op == 'replace':
-            differences.append((seq1[i1], seq2[i2]))
-        elif op == 'delete':
-            differences.append((seq1[i1], ''))
-        elif op == 'insert':
-            differences.append(('', seq2[i2]))
-    return differences
-
-def get_differences2(seq1, seq2):
-    """
-    Compares two sequences and returns the differences between them using Levenshtein distance.
-
-    Args:
-        seq1: The first sequence to compare
-        seq2: The second sequence to compare
-
-    Returns:
-        A list of tuples representing the differences between the sequences. Each tuple contains
-        the corresponding elements from seq1 and seq2 that are different
+        the corresponding elements from seq1 and seq2 that are different.
     """
     edit_ops = Levenshtein.editops(seq1, seq2)  # Get the edit operations required to transform seq1 into seq2
     differences = []  # Initialize an empty list to store the differences
@@ -207,22 +183,22 @@ def get_differences2(seq1, seq2):
             differences.append(('', seq2[i2]))  # Add an empty string for seq1 and the inserted element from seq2
     return differences  # Return the list of differences
 
-
+# Function to compare two Kannada texts line by line
 def compare_lines(text1, text2, color1, color2):
     """
-    Compares two Kannada texts line by line, highlighting differences and providing a summary
+    Compares two Kannada texts line by line, highlighting differences and providing a summary.
 
     Args:
-        text1: The first Kannada text to compare
-        text2: The second Kannada text to compare
-        color1: The color to use for highlighting elements in text1
-        color2: The color to use for highlighting elements in text2
+        text1: The first Kannada text to compare.
+        text2: The second Kannada text to compare.
+        color1: The color to use for highlighting elements in text1.
+        color2: The color to use for highlighting elements in text2.
 
     Returns:
-        A tuple containing
+        A tuple containing:
         - results: A list of tuples, each representing a line comparison with
-                        (original line1, highlighted line2, formatted differences, number of differences in the line)
-        - total differences: The total number of aksharas that differ between the two texts
+                   (original line1, highlighted line2, formatted differences, number of differences in the line).
+        - total differences: The total number of aksharas that differ between the two texts.
     """
     lines1 = text1.splitlines()
     lines2 = text2.splitlines()
@@ -277,19 +253,19 @@ def compare_lines(text1, text2, color1, color2):
 
     return results, total_differences
 
-
+# Function to process Kannada text, counting aksharas per line and the total
 def process_text(text):
     """
     Processes the given Kannada text, counting aksharas per line and the total.
 
     Args:
-        text: The Kannada text to process
+        text: The Kannada text to process.
 
     Returns:
         A tuple containing:
-        - line_word_counts: a list of akshara counts for each line
-        - total_words: the total number of aksharas in the text
-        - num_lines: the number of lines in the text
+        - line_word_counts: a list of akshara counts for each line.
+        - total_words: the total number of aksharas in the text.
+        - num_lines: the number of lines in the text.
     """
     lines = text.splitlines()
     total_words = 0
@@ -308,7 +284,6 @@ def process_text(text):
             line_word_counts.append(word_count)
             total_words += word_count
     return line_word_counts, total_words, len(lines)
-
 
 # Create the miss_read_dict from the DataFrame
 miss_read_dict = create_miss_read_dict_cached(df)
@@ -397,66 +372,59 @@ with st.expander(""):  # Create an expandable section for the aksharas counter
 # Compare The Text of Two Kannada Inscriptions section
 st.markdown("<div class='custom-header'>Compare The Text of Two Kannada Inscriptions</div>", unsafe_allow_html=True) 
 with st.expander(""): 
-    col1, col2 = st.columns(2) 
+    col1, col2 = st.columns(2)  # Create two columns for input
 
     with col1: 
-        seq1 = st.text_area("Enter Kannada text of inscription 1 in the text box below:", "") 
+        seq1 = st.text_area("Enter Kannada text of inscription 1 in the text box below:", "")  # Text area for the first inscription
 
         # Add color picker for Inscription 1 beneath its text area
-        color1 = st.color_picker("Select color for Inscription 1:", INSCRIPTION_1_COLOR) 
+        color1 = st.color_picker("Select color for Inscription 1:", INSCRIPTION_1_COLOR)  # Color picker for the first inscription
 
     with col2:
-        seq2 = st.text_area("Enter Kannada text of inscription 2 in the text box below:", "")
+        seq2 = st.text_area("Enter Kannada text of inscription 2 in the text box below:", "")  # Text area for the second inscription
 
         # Add color picker for Inscription 2 beneath its text area
-        color2 = st.color_picker("Select color for Inscription 2:", INSCRIPTION_2_COLOR) 
+        color2 = st.color_picker("Select color for Inscription 2:", INSCRIPTION_2_COLOR)  # Color picker for the second inscription
 
-    
+    # Display notes about special characters and potential issues with '0'
     st.markdown("<span class='note-line' style='color:blue'>Note: 1) Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True) 
     st.markdown("<span class='note-line' style='color:blue'>      2) The coloured differences indicated below for inscription 2 lines may be wrong when the line contains a '0'. Please recheck the output for all lines containing 0s</span>", unsafe_allow_html=True)
-    if st.button("Compare Inscriptions"):
+    
+    if st.button("Compare Inscriptions"):  # Button to trigger comparison
         if not seq1.strip() or not seq2.strip(): 
-            st.warning("Please enter Kannada text in both text boxes")
+            st.warning("Please enter Kannada text in both text boxes")  # Warning if either text box is empty
         # Input validation: Check for Kannada characters BEFORE processing
         elif not re.search(KANNADA_CHAR_RANGE, seq1) or not re.search(KANNADA_CHAR_RANGE, seq2): 
-            st.warning("Please enter text in Kannada script only in both text boxes")
+            st.warning("Please enter text in Kannada script only in both text boxes")  # Warning if non-Kannada text is detected
         else:
-            # Now process the text to get akshara counts and number of lines
+            # Process the text to get akshara counts and number of lines
             if seq1: 
                 line_word_counts1, total_aksharas1, num_lines1 = process_text(seq1) 
-                st.write(f"Inscription 1 contains {total_aksharas1} aksharas in {num_lines1} lines")
+                st.write(f"Inscription 1 contains {total_aksharas1} aksharas in {num_lines1} lines")  # Display akshara count for the first inscription
 
             if seq2: 
                 line_word_counts2, total_aksharas2, num_lines2 = process_text(seq2)
-                st.write(f"Inscription 2 contains  {total_aksharas2} aksharas in {num_lines2} lines")
+                st.write(f"Inscription 2 contains  {total_aksharas2} aksharas in {num_lines2} lines")  # Display akshara count for the second inscription
 
-            with st.spinner("Comparing inscriptions..."): 
-                comparison_results, total_differences = compare_lines(seq1, seq2, color1, color2)
+            with st.spinner("Comparing inscriptions..."):  # Display a spinner while comparing
+                comparison_results, total_differences = compare_lines(seq1, seq2, color1, color2)  # Compare the inscriptions
 
             for i, (line1, highlighted_line2, differences, line_differences) in enumerate(comparison_results): 
-                
-                    
-                st.write(f"Line {i+1} has {line_differences} akshara differences between inscription 2 and inscription 1")
-
-                    
-                st.markdown(f"<span style='color:{color1}'>{line1}</span>", unsafe_allow_html=True)
-                st.markdown(highlighted_line2, unsafe_allow_html=True) 
-
-                    
-                st.markdown(differences, unsafe_allow_html=True)
-
-                    
-                st.write("---")
+                st.write(f"Line {i+1} has {line_differences} akshara differences between inscription 2 and inscription 1")  # Display the number of differences for each line
+                st.markdown(f"<span style='color:{color1}'>{line1}</span>", unsafe_allow_html=True)  # Display the first line with color
+                st.markdown(highlighted_line2, unsafe_allow_html=True)  # Display the second line with highlighted differences
+                st.markdown(differences, unsafe_allow_html=True)  # Display the formatted differences
+                st.write("---")  # Separator for each line comparison
 
             if total_aksharas1 > 0: 
                 difference_rate = total_differences / total_aksharas1 
-                st.write(f"{total_differences} aksharas are different between inscription 2 and inscription 1. Therefore, the difference rate is {difference_rate:.2%}")
+                st.write(f"{total_differences} aksharas are different between inscription 2 and inscription 1. Therefore, the difference rate is {difference_rate:.2%}")  # Display the total differences and difference rate
             else:
-                st.write("Cannot calculate difference rate as inscription 1 has no aksharas.")
+                st.write("Cannot calculate difference rate as inscription 1 has no aksharas.")  # Handle case where the first inscription has no aksharas
 
             st.markdown("""
             <hr style="height:2px;border-width:0;color:gray;background-color:gray">
-            """, unsafe_allow_html=True) 
+            """, unsafe_allow_html=True)  # Horizontal line separator
 
 # Attribution at the bottom
 st.markdown("<div style='text-align: center;'>The first version of these software utilities were developed by Ujwala Yadav and Deepthi B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)  # Display attribution information

@@ -399,29 +399,40 @@ with st.expander(""):
             st.warning("Please enter text in Kannada script only in both text boxes")  # Warning if non-Kannada text is detected
         else:
             # Process the text to get akshara counts and number of lines
-            if seq1: 
-                line_word_counts1, total_aksharas1, num_lines1 = process_text(seq1) 
-    st.write(f"Inscription 1 contains {total_aksharas1} aksharas in {num_lines1} lines")  # Display akshara count for the first inscription
+            if seq1:
+                line_word_counts1, total_aksharas1, num_lines1 = process_text(seq1)
+            else:
+                # Handle the case where seq1 is empty
+                total_aksharas1 = 0
+                num_lines1 = 0
 
-if seq2: 
-    line_word_counts2, total_aksharas2, num_lines2 = process_text(seq2)
-    st.write(f"Inscription 2 contains  {total_aksharas2} aksharas in {num_lines2} lines")  # Display akshara count for the second inscription
+            if seq2:
+                line_word_counts2, total_aksharas2, num_lines2 = process_text(seq2)
+            else:
+                # Handle the case where seq2 is empty
+                total_aksharas2 = 0
+                num_lines2 = 0
 
-with st.spinner("Comparing inscriptions..."):  # Display a spinner while comparing
-    comparison_results, total_differences = compare_lines(seq1, seq2, color1, color2)  # Compare the inscriptions
+            # Indent the following st.write statements to be within the 'if st.button' block
+            st.write(f"Inscription 1 contains {total_aksharas1} aksharas in {num_lines1} lines")
+            st.write(f"Inscription 2 contains {total_aksharas2} aksharas in {num_lines2} lines")
 
-for i, (line1, highlighted_line2, differences, line_differences) in enumerate(comparison_results): 
-    st.write(f"Line {i+1} has {line_differences} akshara differences between inscription 2 and inscription 1")  # Display the number of differences for each line
-    st.markdown(f"<span style='color:{color1}'>{line1}</span>", unsafe_allow_html=True)  # Display the first line with color
-    st.markdown(highlighted_line2, unsafe_allow_html=True)  # Display the second line with highlighted differences
-    st.markdown(differences, unsafe_allow_html=True)  # Display the formatted differences
-    st.write("---")  # Separator for each line comparison
+            with st.spinner("Comparing inscriptions..."):
+                comparison_results, total_differences = compare_lines(seq1, seq2, color1, color2)
 
-if total_aksharas1 > 0: 
-    difference_rate = total_differences / total_aksharas1 
-    st.write(f"{total_differences} aksharas are different between inscription 2 and inscription 1. Therefore, the difference rate is {difference_rate:.2%}")  # Display the total differences and difference rate
-else:
-    st.write("Cannot calculate difference rate as inscription 1 has no aksharas.")  # Handle case where the first inscription has no aksharas
+            for i, (line1, highlighted_line2, differences, line_differences) in enumerate(comparison_results):
+                st.write(f"Line {i+1} has {line_differences} akshara differences between inscription 2 and inscription 1")
+                st.markdown(f"<span style='color:{color1}'>{line1}</span>", unsafe_allow_html=True)
+                st.markdown(highlighted_line2, unsafe_allow_html=True)
+                st.markdown(differences, unsafe_allow_html=True)
+                st.write("---")
+
+            # Bring the difference rate calculation within the 'if st.button' block
+            if total_aksharas1 > 0:
+                difference_rate = total_differences / total_aksharas1
+                st.write(f"{total_differences} aksharas are different between inscription 2 and inscription 1. Therefore, the difference rate is {difference_rate:.2%}")
+            else:
+                st.write("Cannot calculate difference rate as inscription 1 has no aksharas.")
 
 st.markdown("""
 <hr style="height:2px;border-width:0;color:gray;background-color:gray">

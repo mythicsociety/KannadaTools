@@ -221,24 +221,29 @@ def compare_lines(text1, text2, color1, color2):
     Returns:
         A tuple containing
         - results: A list of tuples, each representing a line comparison with
-                   (original line1, highlighted line2, formatted differences, number of differences in the line)
+                        (original line1, highlighted line2, formatted differences, number of differences in the line)
         - total differences: The total number of aksharas that differ between the two texts
     """
-    lines1 = text1.splitlines()  # Split the first text into lines
-    lines2 = text2.splitlines()  # Split the second text into lines
-    max_len = max(len(lines1), len(lines2))  # Get the maximum number of lines between the two texts
-    results = []  # Initialize an empty list to store the comparison results for each line
-    total_differences = 0  # Initialize a variable to keep track of the total number of differences
+    lines1 = text1.splitlines()
+    lines2 = text2.splitlines()
+    max_len = max(len(lines1), len(lines2))
+    results = []
+    total_differences = 0
 
-    for i in range(max_len):  # Iterate through each line (up to the maximum number of lines)
-        line1 = lines1[i] if i < len(lines1) else ""  # Get the current line or an empty string if it doesn't exist
+    for i in range(max_len):
+        line1 = lines1[i] if i < len(lines1) else ""
         line2 = lines2[i] if i < len(lines2) else ""
-        line1 = clean_text(line1)  # Clean both lines
+        line1 = clean_text(line1)
         line2 = clean_text(line2)
-        seq1_tokens = split_kannada_text_diff(line1)  # Split into tokens, preserving spaces
+        seq1_tokens = split_kannada_text_diff(line1)
         seq2_tokens = split_kannada_text_diff(line2)
 
-        differences_seq = get_differences2(seq1_tokens, seq2_tokens)  # Get the differences between the token sequences
+        differences_seq = get_differences2(seq1_tokens, seq2_tokens)
+
+        # If there are no differences, add the "identical" message
+        if not differences_seq:
+            results.append((line1, line2, "This line is the same in both inscriptions", 0))
+            continue  # Skip the rest of the loop for this line
 
         # Highlight differing aksharas in line2 in color2, the rest in color1
         highlighted_line2 = ""
@@ -246,18 +251,16 @@ def compare_lines(text1, text2, color1, color2):
         for diff in differences_seq:
             if diff[0]:  # If there's a difference in seq1 (not an insertion in seq2)
                 while j < len(seq2_tokens) and seq2_tokens[j] != diff[1]:
-                    highlighted_line2 += f"<span style='color:{color1}'>{seq2_tokens[j]}</span>"  # Highlight matching parts in color1
+                    highlighted_line2 += f"<span style='color:{color1}'>{seq2_tokens[j]}</span>"
                     j += 1
                 if j < len(seq2_tokens) and seq2_tokens[j] == diff[1]:
-                    highlighted_line2 += f"<span style='color:{color2}'>{seq2_tokens[j]}</span>"  # Highlight the difference in color2
+                    highlighted_line2 += f"<span style='color:{color2}'>{seq2_tokens[j]}</span>"
                     j += 1
             else:  # This is an insertion in seq2
-                highlighted_line2 += f"<span style='color:{color2}'>{diff[1]}</span>"  # Highlight the insertion in color2
+                highlighted_line2 += f"<span style='color:{color2}'>{diff[1]}</span>"
 
-        # Highlight any remaining matching parts in color1
         highlighted_line2 += "".join([f"<span style='color:{color1}'>{token}</span>" for token in seq2_tokens[j:]])
 
-        # Format the differences for display
         formatted_differences = '; '.join([
             f"""(<span style='color:{color1}'>{'&nbsp;' if not diff[0] else ''.join(diff[0])}</span>, <span style='color:{color2}'>{'&nbsp;' if not diff[1] else ''.join(diff[1])}</span>)"""
             for diff in differences_seq
@@ -265,12 +268,12 @@ def compare_lines(text1, text2, color1, color2):
 
         line_differences = 0 
         for diff in differences_seq:
-            if diff[1]:  # Count the number of differing aksharas in this line
+            if diff[1]:
                 line_differences += len(split_kannada_text(diff[1]))
 
-        total_differences += line_differences  # Accumulate the total differences
+        total_differences += line_differences
 
-        results.append((line1, highlighted_line2, formatted_differences, line_differences))  # Store the comparison results for this line
+        results.append((line1, highlighted_line2, formatted_differences, line_differences))
 
     return results, total_differences
 
@@ -390,31 +393,31 @@ with st.expander(""):  # Create an expandable section for the aksharas counter
                 st.error(f"An unexpected error occurred: {e}")  # Display an error message
 
 # Compare The Text of Two Kannada Inscriptions section
-st.markdown("<div class='custom-header'>Compare The Text of Two Kannada Inscriptions</div>", unsafe_allow_html=True)  # Add a custom header for this section
-with st.expander(""):  # Create an expandable section for inscription comparison
-    col1, col2 = st.columns(2)  # Create two columns for side-by-side layout
+st.markdown("<div class='custom-header'>Compare The Text of Two Kannada Inscriptions</div>", unsafe_allow_html=True) 
+with st.expander(""): 
+    col1, col2 = st.columns(2) 
 
-    with col1:  # First column for inscription 1
-        seq1 = st.text_area("Enter Kannada text of inscription 1 in the text box below:", "")  # Get user input for the first inscription
+    with col1: 
+        seq1 = st.text_area("Enter Kannada text of inscription 1 in the text box below:", "") 
 
         # Add color picker for Inscription 1 beneath its text area
         color1 = st.color_picker("Select color for Inscription 1:", INSCRIPTION_1_COLOR) 
 
-    with col2:  # Second column for inscription 2
-        seq2 = st.text_area("Enter Kannada text of inscription 2 in the text box below:", "")  # Get user input for the second inscription
+    with col2:
+        seq2 = st.text_area("Enter Kannada text of inscription 2 in the text box below:", "")
 
         # Add color picker for Inscription 2 beneath its text area
         color2 = st.color_picker("Select color for Inscription 2:", INSCRIPTION_2_COLOR) 
 
     
-    st.markdown("<span class='note-line' style='color:blue'>Note: 1) Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True)  # Display a note about special characters
-    st.markdown("<span class='note-line' style='color:blue'>      2) The coloured differences indicated below for inscription 2 lines may be wrong when the line contains a '0'. Please recheck the output for all lines containing 0s</span>", unsafe_allow_html=True)  # Display a note about special characters
-    if st.button("Compare Inscriptions"):  # If the "Compare Inscriptions" button is clicked
-        if not seq1.strip() or not seq2.strip():  # If either inscription text is empty
-            st.warning("Please enter Kannada text in both text boxes")  # Display a warning
+    st.markdown("<span class='note-line' style='color:blue'>Note: 1) Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True) 
+    st.markdown("<span class='note-line' style='color:blue'>      2) The coloured differences indicated below for inscription 2 lines may be wrong when the line contains a '0'. Please recheck the output for all lines containing 0s</span>", unsafe_allow_html=True)
+    if st.button("Compare Inscriptions"):
+        if not seq1.strip() or not seq2.strip(): 
+            st.warning("Please enter Kannada text in both text boxes")
         # Input validation: Check for Kannada characters BEFORE processing
-        elif not re.search(KANNADA_CHAR_RANGE, seq1) or not re.search(KANNADA_CHAR_RANGE, seq2):  # Check if both inputs contain Kannada characters
-            st.warning("Please enter text in Kannada script only in both text boxes")  # Display a warning if no Kannada characters are found
+        elif not re.search(KANNADA_CHAR_RANGE, seq1) or not re.search(KANNADA_CHAR_RANGE, seq2): 
+            st.warning("Please enter text in Kannada script only in both text boxes")
         else:
             # Now process the text to get akshara counts and number of lines
             if seq1: 
@@ -425,29 +428,33 @@ with st.expander(""):  # Create an expandable section for inscription comparison
                 line_word_counts2, total_aksharas2, num_lines2 = process_text(seq2)
                 st.write(f"Inscription 2 contains  {total_aksharas2} aksharas in {num_lines2} lines")
 
-            with st.spinner("Comparing inscriptions..."):  # Display a spinner while comparing
-                comparison_results, total_differences = compare_lines(seq1, seq2, color1, color2)  # Compare the inscriptions and get the results
+            with st.spinner("Comparing inscriptions..."): 
+                comparison_results, total_differences = compare_lines(seq1, seq2, color1, color2)
 
-            for i, (line1, highlighted_line2, differences, line_differences) in enumerate(comparison_results):  # Iterate through the comparison results for each line
-                  
-                    st.write(f" {line_differences} aksharas differ in line {i+1} between inscription 2 and inscription 1")  # Display the number of differing aksharas in the line
+            for i, (line1, highlighted_line2, differences, line_differences) in enumerate(comparison_results): 
+                
+                    
+                st.write(f"Line {i+1} has {line_differences} akshara differences between inscription 2 and inscription 1")
 
-                    st.markdown(f"<span style='color:{color1}'>{line1}</span>", unsafe_allow_html=True)  # Display the original line from inscription 1
-                    st.markdown(highlighted_line2, unsafe_allow_html=True)  # Display the highlighted line from inscription 2 with differences marked
+                    
+                st.markdown(f"<span style='color:{color1}'>{line1}</span>", unsafe_allow_html=True)
+                st.markdown(highlighted_line2, unsafe_allow_html=True) 
 
-                    st.markdown(differences, unsafe_allow_html=True)  # Display the formatted differences
+                    
+                st.markdown(differences, unsafe_allow_html=True)
 
-                    st.write("---")  # Add a separator
+                    
+                st.write("---")
 
-            if total_aksharas1 > 0:  # If inscription 1 has aksharas
-                difference_rate = total_differences / total_aksharas1  # Calculate the difference rate
-                st.write(f"{total_differences} aksharas are different between inscription 2 and inscription 1. Therefore, the difference rate is {difference_rate:.2%}")  # Display the total differences and the difference rate
+            if total_aksharas1 > 0: 
+                difference_rate = total_differences / total_aksharas1 
+                st.write(f"{total_differences} aksharas are different between inscription 2 and inscription 1. Therefore, the difference rate is {difference_rate:.2%}")
             else:
-                st.write("Cannot calculate difference rate as inscription 1 has no aksharas.")  # Display a message if inscription 1 is empty
+                st.write("Cannot calculate difference rate as inscription 1 has no aksharas.")
 
             st.markdown("""
             <hr style="height:2px;border-width:0;color:gray;background-color:gray">
-            """, unsafe_allow_html=True)  # Add a horizontal line separator
+            """, unsafe_allow_html=True) 
 
 # Attribution at the bottom
 st.markdown("<div style='text-align: center;'>The first version of these software utilities were developed by Ujwala Yadav and Deepthi B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)  # Display attribution information

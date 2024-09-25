@@ -47,10 +47,10 @@ def tokenize_kannada_text(text, preserve_spaces=False):
 
 # Create misread dictionary (with caching)
 @st.cache_resource
-def create_misread_dictionary(df):
+def create_misread_dictionary(dataframe):
     """Creates a dictionary of misread aksharas and their corrections."""
     misread_dict = {}
-    for _, row in df.iterrows():
+    for _, row in dataframe.iterrows():
         misread_akshara = row['different_aksharas_in_sentence1']
         corrected_akshara = row['different_aksharas_in_sentence2']
 
@@ -118,6 +118,7 @@ def get_levenshtein_differences(seq1, seq2):
     return differences
 
 # Compare lines with highlighting
+# Compare lines with highlighting
 def compare_lines_with_highlighting(text1, text2, color1, color2):
     """
     Compares two Kannada texts line by line, highlighting differences.
@@ -145,11 +146,11 @@ def compare_lines_with_highlighting(text1, text2, color1, color2):
         line2 = lines2[i] if i < len(lines2) else ""
         line1 = clean_inscription_text(line1)
         line2 = clean_inscription_text(line2)
-        seq1_tokens = tokenize_with_whitespace(line1)
-        seq2_tokens = tokenize_with_whitespace(line2)
+        inscription_1_tokens = tokenize_with_whitespace(line1)
+        inscription_2_tokens = tokenize_with_whitespace(line2)
 
-        differences_seq = get_levenshtein_differences(seq1_tokens, seq2_tokens)
-        edit_ops = Levenshtein.editops(seq1_tokens, seq2_tokens)
+        differences_seq = get_levenshtein_differences(inscription_1_tokens, inscription_2_tokens)
+        edit_ops = Levenshtein.editops(inscription_1_tokens, inscription_2_tokens)
 
         if not differences_seq:
             results.append((line1, line2, "This line is the same in both inscriptions", 0))
@@ -160,27 +161,25 @@ def compare_lines_with_highlighting(text1, text2, color1, color2):
         for op, i1, i2 in edit_ops:
             # Handle unchanged portions before the edit
             if j < i2:
-                highlighted_line2 += "".join(f"<span style='color:{color1}'>{token}</span>" for token in seq2_tokens[j:i2])
+                highlighted_line2 += "".join(f"<span style='color:{color1}'>{token}</span>" for token in inscription_2_tokens[j:i2])
                 j = i2
 
             if op == 'replace':
-                # Highlight the replaced portion in seq2 with color2
-                if seq1_tokens[i1] != seq2_tokens[i2]:
-                    highlighted_line2 += f"<span style='color:{color2}'>{seq2_tokens[i2]}</span>"
-                else:
-                    highlighted_line2 += f"<span style='color:{color1}'>{seq2_tokens[i2]}</span>"
-                i, j = i1 + 1, i2 + 1
+                # Highlight the replaced portion in seq2 with color2, ensuring correct length
+                replace_length = len(tokenize_kannada_text(inscription_1_tokens[i1])) 
+                highlighted_line2 += f"<span style='color:{color2}'>{''.join(inscription_2_tokens[i2:i2 + replace_length])}</span>"
+                i, j = i1 + 1, i2 + replace_length
             elif op == 'delete':
                 # Skip the deleted akshara in seq1
                 i = i1 + 1
             elif op == 'insert':
                 # Highlight the inserted portion in seq2 with color2
-                highlighted_line2 += f"<span style='color:{color2}'>{''.join(seq2_tokens[i2:i2 + 1])}</span>"
+                highlighted_line2 += f"<span style='color:{color2}'>{''.join(inscription_2_tokens[i2:i2 + 1])}</span>"
                 j = i2 + 1
 
         # Add any remaining non-differing characters from line2 ONLY if we've reached the end of seq1
-        if i == len(seq1_tokens) and j < len(seq2_tokens):
-            highlighted_line2 += "".join(f"<span style='color:{color1}'>{token}</span>" for token in seq2_tokens[j:])
+        if i == len(inscription_1_tokens) and j < len(inscription_2_tokens):
+            highlighted_line2 += "".join(f"<span style='color:{color1}'>{token}</span>" for token in inscription_2_tokens[j:])
 
         formatted_differences = '; '.join([
             f"""(<span style='color:{color1}'>{'&nbsp;' if not diff[0] else ''.join(diff[0])}</span>, <span style='color:{color2}'>{'&nbsp;' if not diff[1] else ''.join(diff[1])}</span>)"""
@@ -231,7 +230,7 @@ def process_text(text):
     return line_akshara_counts, total_aksharas, len(lines)
 
 # Load the DataFrame
-df = load_inscription_data() # Add this line
+df = load_inscription_data()
 
 # Create misread dictionary
 misread_dict = create_misread_dictionary(df)
@@ -291,31 +290,34 @@ with st.expander(""):
 
 # Aksharas Counter section
 st.markdown("<div class='custom-header'>Aksharas Counter</div>", unsafe_allow_html=True)
-with st.expander(""):
+with st.expander(""):  # Create an expandable section for the aksharas counter
     text = st.text_area("Enter the Kannada inscription text to count the number of aksharas in:", "")
-    st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be counted</span>", unsafe_allow_html=True) 
-    if st.button("Process Text"):
-        if not text.strip(): 
-            st.warning("Please enter some Kannada text")
-        elif not re.search(KANNADA_CHAR_RANGE, text): 
-            st.warning("Please enter text in Kannada script only") 
+    st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be counted</span>", unsafe_allow_html=True)  # Display a note about special characters
+    if st.button("Process Text"):  # If the "Process Text" button is clicked
+        if not text.strip():  # If the input text is empty
+            st.warning("Please enter some Kannada text")  # Display a warning
+        # Input validation: Check for Kannada characters
+        elif not re.search(KANNADA_CHAR_RANGE, text):  # Check if the input contains Kannada characters
+            st.warning("Please enter text in Kannada script only")  # Display a warning if no Kannada characters are found
         else:
             try:
                 line_akshara_counts, total_aksharas, num_lines = process_text(text)
 
+                # Modified line to display aksharas in red and lines in blue
                 st.markdown(f"This inscription contains <span style='color:red'>{total_aksharas} aksharas</span> in <span style='color:blue'>{num_lines} lines</span>.", unsafe_allow_html=True) 
 
                 st.write("---")
 
                 for i, akshara_count in enumerate(line_akshara_counts):
+                    # Modified line to display the desired output with colors
                     st.markdown(f"<span style='color:red'>Line {i+1}</span> contains <span style='color:blue'>{akshara_count}</span> aksharas.", unsafe_allow_html=True) 
 
             except Exception as e:
                 st.error(f"An unexpected error occurred: {e}")
 
+
 # Compare The Text of Two Kannada Inscriptions section
-# Compare The Text of Two Kannada Inscriptions section
-st.markdown("<div class='custom-header'>Compare The Text of Two Kannada Inscriptions</div>", unsafe_allow_html=True)
+st.markdown("<div class='custom-header'>Compare The Text of Two Kannada Inscriptions</div>", unsafe_allow_html=True) 
 with st.expander(""): 
     col1, col2 = st.columns(2)  # Create two columns for input
 
@@ -328,7 +330,7 @@ with st.expander(""):
         color2 = st.color_picker("Select color for Inscription 2:", INSCRIPTION_2_COLOR)
 
     st.markdown("<span class='note-line' style='color:blue'>Note: 1) Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True)
-    st.markdown("<span class='note_line' style='color:blue'>      2) The coloured differences indicated below for inscription 2 lines may be wrong when the line contains a '0'. Please recheck the output for all lines containing 0s</span>", unsafe_allow_html=True)
+    st.markdown("<span class='note_line' style='color:blue'>      2) The coloured differences indicated below for inscription 2 lines may be wrong when the line contains a '0'. Please recheck the output for all lines containing 0s</span>", unsafe_allow_html=True)
 
     if st.button("Compare Inscriptions"):
         if not inscription_1_text.strip() or not inscription_2_text.strip():

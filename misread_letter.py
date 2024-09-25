@@ -197,7 +197,7 @@ def compare_lines(text1, text2, color1, color2):
     Returns:
         A tuple containing:
         - results: A list of tuples, each representing a line comparison with
-                   (original line1, highlighted line2, formatted differences, number of differences in the line).
+                        (original line1, highlighted line2, formatted differences, number of differences in the line).
         - total differences: The total number of aksharas that differ between the two texts.
     """
     lines1 = text1.splitlines()
@@ -215,34 +215,40 @@ def compare_lines(text1, text2, color1, color2):
         seq2_tokens = split_kannada_text_diff(line2)
 
         differences_seq = get_differences2(seq1_tokens, seq2_tokens)
+        
+        edit_ops = Levenshtein.editops(seq1_tokens, seq2_tokens) # Define edit_ops here 
 
         # If there are no differences, add the "identical" message
         if not differences_seq:
             results.append((line1, line2, "This line is the same in both inscriptions", 0))
             continue  # Skip the rest of the loop for this line
 
-        # Highlight differing aksharas in line2 in color2, the rest in color1
+        # Highlight differing aksharas based on edit operations (refined logic)
         highlighted_line2 = ""
-        j = 0  # Index to track position in seq2_tokens
-        for diff in differences_seq:
-            if diff[0]:  # If there's a difference in seq1 (not an insertion in seq2)
-                while j < len(seq2_tokens) and seq2_tokens[j] != diff[1]:
-                    highlighted_line2 += f"<span style='color:{color1}'>{seq2_tokens[j]}</span>"
-                    j += 1
-                if j < len(seq2_tokens) and seq2_tokens[j] == diff[1]:
-                    highlighted_line2 += f"<span style='color:{color2}'>{seq2_tokens[j]}</span>"
-                    j += 1
-            else:  # This is an insertion in seq2
-                highlighted_line2 += f"<span style='color:{color2}'>{diff[1]}</span>"
+        i, j = 0, 0
+        for op, i1, i2 in edit_ops:
+            # Handle unchanged portions before the edit
+            highlighted_line2 += "".join(f"<span style='color:{color1}'>{token}</span>" for token in seq2_tokens[j:i2])
 
-        highlighted_line2 += "".join([f"<span style='color:{color1}'>{token}</span>" for token in seq2_tokens[j:]])
+            if op == 'replace':
+                highlighted_line2 += f"<span style='color:{color2}'>{seq2_tokens[i2]}</span>"
+                i, j = i1 + 1, i2 + 1
+            elif op == 'delete':
+                # Skip the deleted akshara in seq1
+                i = i1 + 1
+            elif op == 'insert':
+                highlighted_line2 += f"<span style='color:{color2}'>{seq2_tokens[i2]}</span>"
+                j = i2 + 1
+
+        # Handle any remaining unchanged portion at the end
+        highlighted_line2 += "".join(f"<span style='color:{color1}'>{token}</span>" for token in seq2_tokens[j:])
 
         formatted_differences = '; '.join([
             f"""(<span style='color:{color1}'>{'&nbsp;' if not diff[0] else ''.join(diff[0])}</span>, <span style='color:{color2}'>{'&nbsp;' if not diff[1] else ''.join(diff[1])}</span>)"""
             for diff in differences_seq
         ])
 
-        line_differences = 0 
+        line_differences = 0
         for diff in differences_seq:
             if diff[1]:
                 line_differences += len(split_kannada_text(diff[1]))

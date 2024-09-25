@@ -149,7 +149,7 @@ def compare_lines_with_highlighting(text1, text2, color1, color2):
         seq2_tokens = tokenize_with_whitespace(line2)
 
         differences_seq = get_levenshtein_differences(seq1_tokens, seq2_tokens)
-        edit_ops = Levenshtein.editops(seq1_tokens, seq2_tokens) 
+        edit_ops = Levenshtein.editops(seq1_tokens, seq2_tokens)
 
         if not differences_seq:
             results.append((line1, line2, "This line is the same in both inscriptions", 0))
@@ -158,18 +158,29 @@ def compare_lines_with_highlighting(text1, text2, color1, color2):
         highlighted_line2 = ""
         i, j = 0, 0
         for op, i1, i2 in edit_ops:
-            highlighted_line2 += "".join(f"<span style='color:{color1}'>{token}</span>" for token in seq2_tokens[j:i2])
+            # Handle unchanged portions before the edit
+            if j < i2:
+                highlighted_line2 += "".join(f"<span style='color:{color1}'>{token}</span>" for token in seq2_tokens[j:i2])
+                j = i2
 
             if op == 'replace':
-                highlighted_line2 += f"<span style='color:{color2}'>{seq2_tokens[i2]}</span>"
+                # Highlight the replaced portion in seq2 with color2
+                if seq1_tokens[i1] != seq2_tokens[i2]:
+                    highlighted_line2 += f"<span style='color:{color2}'>{seq2_tokens[i2]}</span>"
+                else:
+                    highlighted_line2 += f"<span style='color:{color1}'>{seq2_tokens[i2]}</span>"
                 i, j = i1 + 1, i2 + 1
             elif op == 'delete':
+                # Skip the deleted akshara in seq1
                 i = i1 + 1
             elif op == 'insert':
-                highlighted_line2 += f"<span style='color:{color2}'>{seq2_tokens[i2]}</span>"
+                # Highlight the inserted portion in seq2 with color2
+                highlighted_line2 += f"<span style='color:{color2}'>{''.join(seq2_tokens[i2:i2 + 1])}</span>"
                 j = i2 + 1
 
-        highlighted_line2 += "".join(f"<span style='color:{color1}'>{token}</span>" for token in seq2_tokens[j:])
+        # Add any remaining non-differing characters from line2 ONLY if we've reached the end of seq1
+        if i == len(seq1_tokens) and j < len(seq2_tokens):
+            highlighted_line2 += "".join(f"<span style='color:{color1}'>{token}</span>" for token in seq2_tokens[j:])
 
         formatted_differences = '; '.join([
             f"""(<span style='color:{color1}'>{'&nbsp;' if not diff[0] else ''.join(diff[0])}</span>, <span style='color:{color2}'>{'&nbsp;' if not diff[1] else ''.join(diff[1])}</span>)"""

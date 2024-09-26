@@ -160,26 +160,27 @@ def compare_lines_with_highlighting(text1, text2, color1, color2):
         i, j = 0, 0
         for op, i1, i2 in edit_ops:
             # Handle unchanged portions before the edit
-            if j < i2:
-                highlighted_line2 += "".join(f"<span style='color:{color1}'>{token}</span>" for token in inscription_2_tokens[j:i2])
-                j = i2
+            while j < i2:
+                highlighted_line2 += f"<span style='color:{color1}'>{inscription_2_tokens[j]}</span>"
+                j += 1
 
             if op == 'replace':
-                # Highlight the replaced portion in seq2 with color2, ensuring correct length
+                # Highlight the replaced portion in seq2 with color2
                 replace_length = len(tokenize_kannada_text(inscription_1_tokens[i1])) 
                 highlighted_line2 += f"<span style='color:{color2}'>{''.join(inscription_2_tokens[i2:i2 + replace_length])}</span>"
                 i, j = i1 + 1, i2 + replace_length
             elif op == 'delete':
-                # Skip the deleted akshara in seq1
+                # Skip the deleted akshara in seq1 (nothing to add to highlighted_line2)
                 i = i1 + 1
             elif op == 'insert':
                 # Highlight the inserted portion in seq2 with color2
-                highlighted_line2 += f"<span style='color:{color2}'>{''.join(inscription_2_tokens[i2:i2 + 1])}</span>"
+                highlighted_line2 += f"<span style='color:{color2}'>{inscription_2_tokens[i2]}</span>"
                 j = i2 + 1
 
-        # Add any remaining non-differing characters from line2 ONLY if we've reached the end of seq1
-        if i == len(inscription_1_tokens) and j < len(inscription_2_tokens):
-            highlighted_line2 += "".join(f"<span style='color:{color1}'>{token}</span>" for token in inscription_2_tokens[j:])
+        # Add any remaining non-differing characters from line2 
+        while j < len(inscription_2_tokens):
+            highlighted_line2 += f"<span style='color:{color1}'>{inscription_2_tokens[j]}</span>"
+            j += 1
 
         formatted_differences = '; '.join([
             f"""(<span style='color:{color1}'>{'&nbsp;' if not diff[0] else ''.join(diff[0])}</span>, <span style='color:{color2}'>{'&nbsp;' if not diff[1] else ''.join(diff[1])}</span>)"""

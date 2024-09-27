@@ -320,7 +320,7 @@ with st.expander(""):
         color2 = st.color_picker("Select color for Inscription 2:", INSCRIPTION_2_COLOR)
 
     st.markdown("<span class='note-line' style='color:blue'>Note: 1) Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True)
-    st.markdown("<span class='note_line' style='color:blue'>      2) The coloured differences indicated below for inscription 2 lines may be wrong when the line contains a '0'. Please recheck the output for all lines containing 0s</span>", unsafe_allow_html=True)
+    st.markdown("<span class='note_line' style='color:blue'>      2) The coloured differences indicated below for inscription 2 lines may sometimes be wrong. Please recheck the 'as input' and 'as processed lines' to understand why that may be</span>", unsafe_allow_html=True)
 
     if st.button("Compare Inscriptions"):
         if not inscription_1_text.strip() or not inscription_2_text.strip():
@@ -367,19 +367,19 @@ with st.expander(""):
 
                     with col1:
                         st.write(f"**Line {i + 1}**")
-                        st.write(f"As input 1: {line1}") # Changed "Original" to "As input"
+                        st.write(f"As input in inscription 1: {line1}") # Changed "Original" to "As input"
 
                     with col3:
                         st.write(f"**Line {i + 1}**")
-                        st.write(f"As input 2: {line2}") # Changed "Original" to "As input"
+                        st.write(f"As input in inscription 2: {line2}") # Changed "Original" to "As input"
 
                     with col2:
                         st.write(f"**Line {i + 1}**")
-                        st.write(f"As processed 1: <span style='color:{color1}'>{cleaned_line1}</span>", unsafe_allow_html=True) # Changed "Cleaned" to "As processed"
+                        st.write(f"As processed for inscription 1: <span style='color:{color1}'>{cleaned_line1}</span>", unsafe_allow_html=True) # Changed "Cleaned" to "As processed"
 
                     with col4:
                         st.write(f"**Line {i + 1}**")
-                        st.markdown(f"<p>As processed 2: {highlighted_line2}</p>", unsafe_allow_html=True) # Combined text and highlighted line
+                        st.markdown(f"<p>As processed for inscription 2: {highlighted_line2}</p>", unsafe_allow_html=True) # Combined text and highlighted line
                         if line_differences > 0:
                             st.write(f"Akshara differences: {line_differences}")
                             st.markdown(differences, unsafe_allow_html=True)

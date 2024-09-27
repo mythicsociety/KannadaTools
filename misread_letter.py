@@ -118,85 +118,74 @@ def get_levenshtein_differences(seq1, seq2):
     return differences
 
 # Compare lines with highlighting
-# Compare lines with highlighting
 def compare_lines_with_highlighting(text1, text2, color1, color2):
     """
     Compares two Kannada texts line by line, highlighting differences.
-
-    Args:
-        text1: The first Kannada text.
-        text2: The second Kannada text.
-        color1: Color for text1 highlights.
-        color2: Color for text2 highlights.
-
-    Returns:
-        A tuple containing:
-        - results: List of tuples with (original line1, highlighted line2, formatted differences, difference count).
-        - total_differences: Total akshara differences.
     """
-
     lines1 = text1.splitlines()
     lines2 = text2.splitlines()
     max_len = max(len(lines1), len(lines2))
     results = []
     total_differences = 0
+    comparison_results = []
 
     for i in range(max_len):
         line1 = lines1[i] if i < len(lines1) else ""
         line2 = lines2[i] if i < len(lines2) else ""
-        line1 = clean_inscription_text(line1)
-        line2 = clean_inscription_text(line2)
-        inscription_1_tokens = tokenize_with_whitespace(line1)
-        inscription_2_tokens = tokenize_with_whitespace(line2)
+        cleaned_line1 = clean_inscription_text(line1)
+        cleaned_line2 = clean_inscription_text(line2)
+
+        inscription_1_tokens = tokenize_with_whitespace(cleaned_line1)
+        inscription_2_tokens = tokenize_with_whitespace(cleaned_line2)
 
         differences_seq = get_levenshtein_differences(inscription_1_tokens, inscription_2_tokens)
-        edit_ops = Levenshtein.editops(inscription_1_tokens, inscription_2_tokens)
+
+        # Filter out empty tuples from differences_seq
+        differences_seq = [diff for diff in differences_seq if diff != ('', '')]
 
         if not differences_seq:
-            results.append((line1, line2, "This line is the same in both inscriptions", 0))
-            continue
+            results.append((cleaned_line1, cleaned_line2, "This line is the same in both inscriptions", 0))
+            highlighted_line2 = f"<span style='color:{color1}'>{cleaned_line2}</span>"
+            comparison_results.append((line1, line2, cleaned_line1, highlighted_line2, "", 0))
+        else:
+            edit_ops = Levenshtein.editops(inscription_1_tokens, inscription_2_tokens)
+            highlighted_line2 = ""
+            i, j = 0, 0
+            line_differences = 0
 
-        highlighted_line2 = ""
-        i, j = 0, 0
-        for op, i1, i2 in edit_ops:
-            # Handle unchanged portions before the edit
-            while j < i2:
+            for op, i1, i2 in edit_ops:
+                while j < i2:
+                    highlighted_line2 += f"<span style='color:{color1}'>{inscription_2_tokens[j]}</span>"
+                    j += 1
+
+                if op == 'replace':
+                    replace_length = len(tokenize_kannada_text(inscription_1_tokens[i1]))
+                    highlighted_line2 += f"<span style='color:{color2}'>{''.join(inscription_2_tokens[i2:i2 + replace_length])}</span>"
+                    i, j = i1 + 1, i2 + replace_length
+                    line_differences += replace_length
+                elif op == 'delete':
+                    i = i1 + 1
+                    line_differences += 1
+                elif op == 'insert':
+                    highlighted_line2 += f"<span style='color:{color2}'>{inscription_2_tokens[i2]}</span>"
+                    j = i2 + 1
+                    line_differences += 1
+
+            while j < len(inscription_2_tokens):
                 highlighted_line2 += f"<span style='color:{color1}'>{inscription_2_tokens[j]}</span>"
                 j += 1
 
-            if op == 'replace':
-                # Highlight the replaced portion in seq2 with color2
-                replace_length = len(tokenize_kannada_text(inscription_1_tokens[i1])) 
-                highlighted_line2 += f"<span style='color:{color2}'>{''.join(inscription_2_tokens[i2:i2 + replace_length])}</span>"
-                i, j = i1 + 1, i2 + replace_length
-            elif op == 'delete':
-                # Skip the deleted akshara in seq1 (nothing to add to highlighted_line2)
-                i = i1 + 1
-            elif op == 'insert':
-                # Highlight the inserted portion in seq2 with color2
-                highlighted_line2 += f"<span style='color:{color2}'>{inscription_2_tokens[i2]}</span>"
-                j = i2 + 1
+            formatted_differences = '; '.join([
+                f"""(<span style='color:{color1}'>{'&nbsp;' if not diff[0] else ''.join(diff[0])}</span>, <span style='color:{color2}'>{'&nbsp;' if not diff[1] else ''.join(diff[1])}</span>)"""
+                for diff in differences_seq
+            ])
 
-        # Add any remaining non-differing characters from line2 
-        while j < len(inscription_2_tokens):
-            highlighted_line2 += f"<span style='color:{color1}'>{inscription_2_tokens[j]}</span>"
-            j += 1
+            total_differences += line_differences
 
-        formatted_differences = '; '.join([
-            f"""(<span style='color:{color1}'>{'&nbsp;' if not diff[0] else ''.join(diff[0])}</span>, <span style='color:{color2}'>{'&nbsp;' if not diff[1] else ''.join(diff[1])}</span>)"""
-            for diff in differences_seq
-        ])
+            results.append((cleaned_line1, highlighted_line2, formatted_differences, line_differences))
+            comparison_results.append((line1, line2, cleaned_line1, highlighted_line2, formatted_differences, line_differences))
 
-        line_differences = 0
-        for diff in differences_seq:
-            if diff[1]:
-                line_differences += len(tokenize_kannada_text(diff[1]))
-
-        total_differences += line_differences
-
-        results.append((line1, highlighted_line2, formatted_differences, line_differences))
-
-    return results, total_differences
+    return comparison_results, total_differences 
 
 # Process text for akshara count
 def process_text(text):
@@ -318,9 +307,9 @@ with st.expander(""):  # Create an expandable section for the aksharas counter
 
 
 # Compare The Text of Two Kannada Inscriptions section
-st.markdown("<div class='custom-header'>Compare The Text of Two Kannada Inscriptions</div>", unsafe_allow_html=True) 
-with st.expander(""): 
-    col1, col2 = st.columns(2)  # Create two columns for input
+st.markdown("<div class='custom-header'>Compare The Text of Two Kannada Inscriptions</div>", unsafe_allow_html=True)
+with st.expander(""):
+    col1, col2 = st.columns(2)
 
     with col1:
         inscription_1_text = st.text_area("Enter Kannada text of inscription 1 in the text box below:", "")
@@ -342,15 +331,19 @@ with st.expander(""):
             try:
                 if inscription_1_text:
                     line_akshara_counts1, total_aksharas1, num_lines1 = process_text(inscription_1_text)
+                    lines1 = inscription_1_text.splitlines() 
                 else:
                     total_aksharas1 = 0
                     num_lines1 = 0
+                    lines1 = []
 
                 if inscription_2_text:
                     line_akshara_counts2, total_aksharas2, num_lines2 = process_text(inscription_2_text)
+                    lines2 = inscription_2_text.splitlines()
                 else:
                     total_aksharas2 = 0
                     num_lines2 = 0
+                    lines2 = []
 
                 st.write(f"Inscription 1 contains {total_aksharas1} aksharas in {num_lines1} lines")
                 st.write(f"Inscription 2 contains {total_aksharas2} aksharas in {num_lines2} lines")
@@ -358,22 +351,40 @@ with st.expander(""):
                 with st.spinner("Comparing inscriptions..."):
                     comparison_results, total_differences = compare_lines_with_highlighting(inscription_1_text, inscription_2_text, color1, color2)
 
-                # Display results side-by-side
-                for i, (line1, highlighted_line2, differences, line_differences) in enumerate(comparison_results):
-                    col3, col4 = st.columns(2)  # Create two columns for side-by-side display
+                # Display original and cleaned lines along with the side-by-side comparison
+                max_len = max(len(lines1), len(lines2))
+                for i in range(max_len):
+                    line1 = lines1[i] if i < len(lines1) else ""
+                    line2 = lines2[i] if i < len(lines2) else ""
+                    cleaned_line1 = clean_inscription_text(line1)
+                    cleaned_line2 = clean_inscription_text(line2)
+
+                    # Get highlighted_line2 from comparison_results
+                    _, _, _, highlighted_line2, differences, line_differences = comparison_results[i]
+
+                    # Rearrange columns: Original 1, Original 2, Cleaned 1, Highlighted 2
+                    col1, col3, col2, col4 = st.columns(4)
+
+                    with col1:
+                        st.write(f"**Line {i + 1}**")
+                        st.write(f"As input 1: {line1}") # Changed "Original" to "As input"
 
                     with col3:
-                        st.write(f"**Line {i + 1}** (Inscription 1)")
-                        st.markdown(f"<span style='color:{color1}'>{line1}</span>", unsafe_allow_html=True)
+                        st.write(f"**Line {i + 1}**")
+                        st.write(f"As input 2: {line2}") # Changed "Original" to "As input"
+
+                    with col2:
+                        st.write(f"**Line {i + 1}**")
+                        st.write(f"As processed 1: <span style='color:{color1}'>{cleaned_line1}</span>", unsafe_allow_html=True) # Changed "Cleaned" to "As processed"
 
                     with col4:
-                        st.write(f"**Line {i + 1}** (Inscription 2)")
-                        st.markdown(highlighted_line2, unsafe_allow_html=True)
+                        st.write(f"**Line {i + 1}**")
+                        st.markdown(f"<p>As processed 2: {highlighted_line2}</p>", unsafe_allow_html=True) # Combined text and highlighted line
                         if line_differences > 0:
                             st.write(f"Akshara differences: {line_differences}")
                             st.markdown(differences, unsafe_allow_html=True)
 
-                    st.write("---")  # Separator between lines
+                    st.write("---")
 
                 if total_aksharas1 > 0:
                     difference_rate = total_differences / total_aksharas1

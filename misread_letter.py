@@ -4,21 +4,21 @@ import re
 import unicodedata
 import Levenshtein
 
-# Constants
+# Constants 
 DATA_FILE_URL = "https://github.com/mythicsociety/KannadaTools/raw/94814a2766fd22e89e24976eded769d45a82560a/mythic_society%20(1).xlsx"
 INSCRIPTION_1_COLOR = "#FF0000"
 INSCRIPTION_2_COLOR = "#0000FF"
 KANNADA_CHAR_RANGE = r'[\u0C80-\u0CFF]'
 SPECIAL_CHARS_REGEX = r'[^\w\s\u0C80-\u0CFF\u200c|]'
 
-# Load data (with caching)
+# Load data (with caching) 
 @st.cache_data(ttl=3600)
 def load_inscription_data():
     """Loads inscription data from the Excel file."""
     return pd.read_excel(DATA_FILE_URL)
 
-# Tokenize Kannada text
-def tokenize_kannada_text(text, preserve_spaces=False):
+# Tokenize Kannada text 
+def tokenize_kannada(text, preserve_whitespace=False):
     """Splits Kannada text into tokens, optionally preserving whitespace."""
     tokens = []
     char_index = 0
@@ -27,7 +27,7 @@ def tokenize_kannada_text(text, preserve_spaces=False):
         token = char
         char_index += 1
 
-        if not preserve_spaces and char.isspace():
+        if not preserve_whitespace and char.isspace():
             continue
 
         while char_index < len(text) and (
@@ -45,9 +45,9 @@ def tokenize_kannada_text(text, preserve_spaces=False):
 
     return tokens
 
-# Create misread dictionary (with caching)
+# Create misread dictionary (with caching) 
 @st.cache_resource
-def create_misread_dictionary(dataframe):
+def get_misread_dict(dataframe):
     """Creates a dictionary of misread aksharas and their corrections."""
     misread_dict = {}
     for _, row in dataframe.iterrows():
@@ -63,11 +63,11 @@ def create_misread_dictionary(dataframe):
 
     return misread_dict
 
-# Predict potential misreads
-def predict_potential_misreads(sentence, misread_dict):
+# Predict potential misreads 
+def predict_misreads(sentence, misread_dict):
     """Predicts potential misread aksharas in a sentence."""
     potential_misreads = {}
-    tokens = tokenize_kannada_text(sentence)
+    tokens = tokenize_kannada(sentence)  
 
     for token in tokens:
         if token in misread_dict:
@@ -75,7 +75,7 @@ def predict_potential_misreads(sentence, misread_dict):
 
     return potential_misreads
 
-# Clean text
+# Clean text 
 def clean_inscription_text(text):
     """Cleans inscription text by removing special characters and extra whitespace."""
     text = re.sub(r'\[.*?\]', '', text)
@@ -84,12 +84,7 @@ def clean_inscription_text(text):
     text = re.sub(SPECIAL_CHARS_REGEX, '', text)
     return text
 
-# Tokenize with whitespace preservation
-def tokenize_with_whitespace(text):
-    """Splits Kannada text into tokens, preserving whitespace."""
-    return tokenize_kannada_text(text, preserve_spaces=True)
-
-# Count aksharas
+# Count aksharas 
 def count_aksharas(text):
     """Counts the number of aksharas in Kannada text."""
     text = clean_inscription_text(text)
@@ -97,14 +92,14 @@ def count_aksharas(text):
     tokens = []
     for word in words:
         if word.strip() and word != '|':
-            tokens.extend(tokenize_kannada_text(word))
+            tokens.extend(tokenize_kannada(word))  
         elif word == '|':
             tokens.append(word)
     tokens = [token for token in tokens if token.strip()]
     return len(tokens)
 
-# Get Levenshtein differences
-def get_levenshtein_differences(seq1, seq2):
+# Get Levenshtein differences 
+def get_levenshtein_diffs(seq1, seq2):
     """Compares two sequences and returns Levenshtein differences."""
     edit_ops = Levenshtein.editops(seq1, seq2)
     differences = []
@@ -117,8 +112,8 @@ def get_levenshtein_differences(seq1, seq2):
             differences.append(('', seq2[i2]))
     return differences
 
-# Compare lines with highlighting
-def compare_lines_with_highlighting(text1, text2, color1, color2):
+# Compare lines with highlighting 
+def compare_and_highlight_lines(text1, text2, color1, color2):
     """
     Compares two Kannada texts line by line, highlighting differences.
     """
@@ -135,10 +130,10 @@ def compare_lines_with_highlighting(text1, text2, color1, color2):
         cleaned_line1 = clean_inscription_text(line1)
         cleaned_line2 = clean_inscription_text(line2)
 
-        inscription_1_tokens = tokenize_with_whitespace(cleaned_line1)
-        inscription_2_tokens = tokenize_with_whitespace(cleaned_line2)
+        inscription_1_tokens = tokenize_kannada(cleaned_line1, preserve_whitespace=True) 
+        inscription_2_tokens = tokenize_kannada(cleaned_line2, preserve_whitespace=True) 
 
-        differences_seq = get_levenshtein_differences(inscription_1_tokens, inscription_2_tokens)
+        differences_seq = get_levenshtein_diffs(inscription_1_tokens, inscription_2_tokens)
 
         # Filter out empty tuples from differences_seq
         differences_seq = [diff for diff in differences_seq if diff != ('', '')]
@@ -159,7 +154,7 @@ def compare_lines_with_highlighting(text1, text2, color1, color2):
                     j += 1
 
                 if op == 'replace':
-                    replace_length = len(tokenize_kannada_text(inscription_1_tokens[i1]))
+                    replace_length = len(tokenize_kannada(inscription_1_tokens[i1])) 
                     highlighted_line2 += f"<span style='color:{color2}'>{''.join(inscription_2_tokens[i2:i2 + replace_length])}</span>"
                     i, j = i1 + 1, i2 + replace_length
                     line_differences += replace_length
@@ -185,10 +180,10 @@ def compare_lines_with_highlighting(text1, text2, color1, color2):
             results.append((cleaned_line1, highlighted_line2, formatted_differences, line_differences))
             comparison_results.append((line1, line2, cleaned_line1, highlighted_line2, formatted_differences, line_differences))
 
-    return comparison_results, total_differences 
+    return comparison_results, total_differences  
 
-# Process text for akshara count
-def process_text(text):
+# Process text for akshara count 
+def count_aksharas_per_line(text):
     """
     Processes Kannada text, counting aksharas per line and the total.
 
@@ -207,11 +202,13 @@ def process_text(text):
     for line in lines:
         if line.strip():
             cleaned_line = clean_inscription_text(line)
+            # Split the cleaned line into words, treating whitespace and the pipe symbol '|' as delimiters. 
+            # The pipe symbol is likely used to mark specific separations or boundaries within the inscription text
             words = re.split(r'(\s+|\|)', cleaned_line)
             word_tokens = []
             for word in words:
                 if word.strip() and word != '|':
-                    word_tokens.extend(tokenize_kannada_text(word))
+                    word_tokens.extend(tokenize_kannada(word))  
                 elif word == '|':
                     word_tokens.append(word)
             akshara_count = len([token for token in word_tokens if token.strip()])
@@ -222,8 +219,8 @@ def process_text(text):
 # Load the DataFrame
 df = load_inscription_data()
 
-# Create misread dictionary
-misread_dict = create_misread_dictionary(df)
+# Create misread dictionary 
+misread_dict = get_misread_dict(df)
 
 # Streamlit UI
 st.markdown("""
@@ -270,7 +267,7 @@ with st.expander(""):
         if not re.search(KANNADA_CHAR_RANGE, sentence): 
             st.warning("Please enter only Kannada text") 
         else:
-            result = predict_potential_misreads(sentence, misread_dict) 
+            result = predict_misreads(sentence, misread_dict) 
             if result: 
                 st.write("Observations made during the correction of over 200 inscriptions from the Bengaluru region suggest that the following aksharas in the provided inscription may have been misread:")
                 for miss_read, corrections in result.items(): 
@@ -280,31 +277,27 @@ with st.expander(""):
 
 # Aksharas Counter section
 st.markdown("<div class='custom-header'>Aksharas Counter</div>", unsafe_allow_html=True)
-with st.expander(""):  # Create an expandable section for the aksharas counter
+with st.expander(""):  
     text = st.text_area("Enter the Kannada inscription text to count the number of aksharas in:", "")
-    st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be counted</span>", unsafe_allow_html=True)  # Display a note about special characters
-    if st.button("Process Text"):  # If the "Process Text" button is clicked
-        if not text.strip():  # If the input text is empty
-            st.warning("Please enter some Kannada text")  # Display a warning
-        # Input validation: Check for Kannada characters
-        elif not re.search(KANNADA_CHAR_RANGE, text):  # Check if the input contains Kannada characters
-            st.warning("Please enter text in Kannada script only")  # Display a warning if no Kannada characters are found
+    st.markdown("<span class='note-line' style='color:blue'>Note: Any special characters such as *,),},],?,., etc in the inscription text will not be counted</span>", unsafe_allow_html=True)  
+    if st.button("Process Text"):  
+        if not text.strip():  
+            st.warning("Please enter some Kannada text")  
+        elif not re.search(KANNADA_CHAR_RANGE, text):  
+            st.warning("Please enter text in Kannada script only")  
         else:
             try:
-                line_akshara_counts, total_aksharas, num_lines = process_text(text)
+                line_akshara_counts, total_aksharas, num_lines = count_aksharas_per_line(text) 
 
-                # Modified line to display aksharas in red and lines in blue
                 st.markdown(f"This inscription contains <span style='color:red'>{total_aksharas} aksharas</span> in <span style='color:blue'>{num_lines} lines</span>.", unsafe_allow_html=True) 
 
                 st.write("---")
 
                 for i, akshara_count in enumerate(line_akshara_counts):
-                    # Modified line to display the desired output with colors
                     st.markdown(f"<span style='color:red'>Line {i+1}</span> contains <span style='color:blue'>{akshara_count}</span> aksharas.", unsafe_allow_html=True) 
 
             except Exception as e:
                 st.error(f"An unexpected error occurred: {e}")
-
 
 # Compare The Text of Two Kannada Inscriptions section
 st.markdown("<div class='custom-header'>Compare The Text of Two Kannada Inscriptions</div>", unsafe_allow_html=True)
@@ -319,7 +312,7 @@ with st.expander(""):
         inscription_2_text = st.text_area("Enter Kannada text of inscription 2 in the text box below:", "")
         color2 = st.color_picker("Select color for Inscription 2:", INSCRIPTION_2_COLOR)
 
-    st.markdown("<span class='note-line' style='color:blue'>Note: 1) Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True)
+    st.markdown("<span class='note_line' style='color:blue'>Note: 1) Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True)
     st.markdown("<span class='note_line' style='color:blue'>      2) The coloured differences indicated below for inscription 2 lines may sometimes be wrong. Please recheck the 'as input' and 'as processed lines' to understand why that may be</span>", unsafe_allow_html=True)
 
     if st.button("Compare Inscriptions"):
@@ -330,7 +323,7 @@ with st.expander(""):
         else:
             try:
                 if inscription_1_text:
-                    line_akshara_counts1, total_aksharas1, num_lines1 = process_text(inscription_1_text)
+                    line_akshara_counts1, total_aksharas1, num_lines1 = count_aksharas_per_line(inscription_1_text) 
                     lines1 = inscription_1_text.splitlines() 
                 else:
                     total_aksharas1 = 0
@@ -338,7 +331,7 @@ with st.expander(""):
                     lines1 = []
 
                 if inscription_2_text:
-                    line_akshara_counts2, total_aksharas2, num_lines2 = process_text(inscription_2_text)
+                    line_akshara_counts2, total_aksharas2, num_lines2 = count_aksharas_per_line(inscription_2_text) 
                     lines2 = inscription_2_text.splitlines()
                 else:
                     total_aksharas2 = 0
@@ -349,7 +342,7 @@ with st.expander(""):
                 st.write(f"Inscription 2 contains {total_aksharas2} aksharas in {num_lines2} lines")
 
                 with st.spinner("Comparing inscriptions..."):
-                    comparison_results, total_differences = compare_lines_with_highlighting(inscription_1_text, inscription_2_text, color1, color2)
+                    comparison_results, total_differences = compare_and_highlight_lines(inscription_1_text, inscription_2_text, color1, color2)
 
                 # Display original and cleaned lines along with the side-by-side comparison
                 max_len = max(len(lines1), len(lines2))
@@ -367,19 +360,19 @@ with st.expander(""):
 
                     with col1:
                         st.write(f"**Line {i + 1}**")
-                        st.write(f"As input in inscription 1: {line1}") # Changed "Original" to "As input"
+                        st.write(f"As input in inscription 1: {line1}") 
 
                     with col3:
                         st.write(f"**Line {i + 1}**")
-                        st.write(f"As input in inscription 2: {line2}") # Changed "Original" to "As input"
+                        st.write(f"As input in inscription 2: {line2}") 
 
                     with col2:
                         st.write(f"**Line {i + 1}**")
-                        st.write(f"As processed for inscription 1: <span style='color:{color1}'>{cleaned_line1}</span>", unsafe_allow_html=True) # Changed "Cleaned" to "As processed"
+                        st.write(f"As processed for inscription 1: <span style='color:{color1}'>{cleaned_line1}</span>", unsafe_allow_html=True)
 
                     with col4:
                         st.write(f"**Line {i + 1}**")
-                        st.markdown(f"<p>As processed for inscription 2: {highlighted_line2}</p>", unsafe_allow_html=True) # Combined text and highlighted line
+                        st.markdown(f"<p>As processed for inscription 2: {highlighted_line2}</p>", unsafe_allow_html=True) 
                         if line_differences > 0:
                             st.write(f"Akshara differences: {line_differences}")
                             st.markdown(differences, unsafe_allow_html=True)
@@ -401,4 +394,4 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Attribution
-st.markdown("<div style='text-align: center;'>The first version of these software utilities were developed by Ujwala Yadav and Deepthi B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True) 
+st.markdown("<div style='text-align: center;'>The first version of these software utilities were developed by Ujwala Yadav and Deepthi B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)

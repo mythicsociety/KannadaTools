@@ -364,27 +364,28 @@ with st.expander(""):
                     # Get highlighted_line2 from comparison_results
                     _, _, _, highlighted_line2, differences, line_differences = comparison_results[i]
 
-                    # Rearrange columns: Original 1, Original 2, Cleaned 1, Highlighted 2
-                    col1, col3, col2, col4 = st.columns(4)
+                    # Rearrange columns: Line Number, Original 1, Original 2, Cleaned 1, Highlighted 2
+                    col0, col1, col3, col2, col4 = st.columns(5)  # Added col0 for line number
+
+                    with col0:
+                        st.write(f"**{i + 1}**")  # Display line number only once
 
                     with col1:
-                        st.write(f"**Line {i + 1}**")
                         st.write(f"As input in inscription 1: {line1}") 
 
                     with col3:
-                        st.write(f"**Line {i + 1}**")
                         st.write(f"As input in inscription 2: {line2}") 
 
                     with col2:
-                        st.write(f"**Line {i + 1}**")
                         st.write(f"As processed for inscription 1: <span style='color:{color1}'>{cleaned_line1}</span>", unsafe_allow_html=True)
 
                     with col4:
-                        st.write(f"**Line {i + 1}**")
                         st.markdown(f"<p>As processed for inscription 2: {highlighted_line2}</p>", unsafe_allow_html=True) 
                         if line_differences > 0:
                             st.write(f"Akshara differences: {line_differences}")
                             st.markdown(differences, unsafe_allow_html=True)
+                        else:  # Add this condition
+                            st.markdown("<span style='color:green'>This line is the same in both inscriptions</span>", unsafe_allow_html=True)
 
                     st.write("---")
 

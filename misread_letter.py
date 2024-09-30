@@ -11,6 +11,12 @@ INSCRIPTION_2_COLOR = "#0000FF"
 KANNADA_CHAR_RANGE = r'[\u0C80-\u0CFF]'
 SPECIAL_CHARS_REGEX = r'[^\w\s\u0C80-\u0CFF\u200c|]'
 
+# Define the GitHub repository URL
+repo_url = "https://github.com/mythicsociety/KannadaTools"  
+
+# Define the URL you want to link to
+levenshtein_url = "https://en.wikipedia.org/wiki/Levenshtein_distance"  
+
 # Load data (with caching) 
 @st.cache_data(ttl=3600)
 def load_inscription_data():
@@ -313,7 +319,10 @@ with st.expander(""):
         color2 = st.color_picker("Select color for Inscription 2:", INSCRIPTION_2_COLOR)
 
     st.markdown("<span class='note_line' style='color:blue'>Note: 1) Any special characters such as *,),},],?,., etc in the inscription text will not be counted or compared.</span>", unsafe_allow_html=True)
-    st.markdown("<span class='note_line' style='color:blue'>      2) The coloured differences indicated below for inscription 2 lines may sometimes be wrong. Please recheck the 'as input' and 'as processed lines' to understand why that may be</span>", unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <span class='note_line' style='color:blue'>      2) This program utilizes the <a href="{levenshtein_url}" target="_blank">Levenshtein algorithm</a> to compare two Kannada inscriptions. While this algorithm is primarily designed for alphabets, it has been adapted in this instance to function with the Kannada syllabary. It's important to note that in rare cases, the highlighted differences in inscription 2 might be inaccurate. If you observe any discrepancies, please double-check the 'as input' and 'as processed' lines for further verification.</span>
+    """, unsafe_allow_html=True)
 
     if st.button("Compare Inscriptions"):
         if not inscription_1_text.strip() or not inscription_2_text.strip():
@@ -393,5 +402,12 @@ st.markdown("""
 <hr style="height:2px;border-width:0;color:gray;background-color:gray">
 """, unsafe_allow_html=True)
 
-# Attribution
+# Attribution 
 st.markdown("<div style='text-align: center;'>The first version of these software utilities were developed by Ujwala Yadav and Deepthi B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)
+
+# Separate line for project and code link
+st.markdown(f"""
+<div style='text-align: center;'>
+For more about this project, please visit the <a href="{repo_url}" target="_blank">GitHub Repository</a>
+</div>
+""", unsafe_allow_html=True)

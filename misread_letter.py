@@ -412,3 +412,5 @@ st.markdown(f"""
 For more about this project, please visit the <a href="{repo_url}" target="_blank">GitHub Repository</a>
 </div>
 """, unsafe_allow_html=True)
+# Feedback Line
+st.markdown("<div style='text-align: center;'>For feedback about these utilities please write to <a href='mailto:3dscanning.mythicsociety@gmail.com'>3dscanning.mythicsociety@gmail.com</a></div>", unsafe_allow_html=True)

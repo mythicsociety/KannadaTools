@@ -209,7 +209,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Attribution 
-st.markdown("<div style='text-align: center;'>The first version of these software utilities were developed by Ujwala Yadav and Deepthi B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center;'>The first version of these software utilities were developed by Ujwala Yadav and Deepthi B J during their internship with the Mythic Society Bengaluru Inscriptions 3D Digital Conservation Project. API added by Karthik Aditya</div>", unsafe_allow_html=True)
 
 # Separate line for project and code link
 st.markdown(f"""
